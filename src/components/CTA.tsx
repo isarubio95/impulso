@@ -10,7 +10,7 @@ type CTAProps = {
 
 export default function CTA({ texto, onClick, href, icono}: CTAProps) {
   const baseStyles =
-    'inline-flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-2xl shadow hover:shadow-lg text-sm font-bold cursor-pointer transition'
+    'inline-flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-2xl shadow hover:shadow-lg text-sm font-bold cursor-pointer hover:scale-102 transition-transform duration-300 transition'
     
     const contenido = (
         <>
