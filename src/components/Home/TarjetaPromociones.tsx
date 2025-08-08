@@ -1,5 +1,5 @@
 import Image, { StaticImageData } from 'next/image'
-import CTA from './CTA'
+import CTA from '@/components/CTA'
 
 type PromocionesProps = {
   imagen: StaticImageData
@@ -19,7 +19,7 @@ export default function TarjetaPromociones({
   precioAntiguo,
 }: PromocionesProps) {
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 text-center space-y-4">
+    <div className="bg-white rounded-xl shadow-xl sm:shadow-md hover:shadow-xl transition-shadow duration-300 text-center space-y-4">
         <div className="bg-stone-200 w-full h-40 p-4 rounded-tl-xl rounded-tr-xl flex items-center justify-center">
         <Image
             src={imagen}

@@ -14,12 +14,12 @@ export default function Hero() {
       <div className="w-full h-full flex justify-center items-center gap-10">
         
         {/* Texto */}
-        <div className='w-1/2 h-full flex flex-col items-end'>
+        <div className='w-full sm:w-1/2 h-full flex flex-col items-center sm:items-end'>
           <div className="w-fit h-full py-16 flex items-end text-center relative">
             <Image
                 src={LogoHero}
                 alt="Logotipo de la empresa"
-                className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10"
+                className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10"
                 quality={100}
             />
             <div className='space-y-6'>

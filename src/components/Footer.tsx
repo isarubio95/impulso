@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="bg-stone-900 text-stone-300 mt-12">
-      <div className="container mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+      <div className="container mx-auto px-4 pb-10 pt-1 grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-sm">
         <div>
           <p className="font-semibold text-white mb-2">Impulso</p>
           <p>Centro de bienestar en Logroño.</p>

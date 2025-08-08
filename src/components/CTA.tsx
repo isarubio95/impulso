@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image, { StaticImageData } from 'next/image'
 
 type CTAProps = {
   texto: string

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils'
 export default function Header() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScroll, setLastScroll] = useState(0)
 
   const navItems = [
     { href: '/', label: 'Inicio' },
@@ -21,8 +23,29 @@ export default function Header() {
     { href: '/contacto', label: 'Contacto' },
   ]
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScroll = window.scrollY
+      if (currentScroll < 50) {
+        setIsVisible(true)
+      } else if (currentScroll < lastScroll) {
+        setIsVisible(true) // Subiendo → mostrar
+      } else {
+        setIsVisible(false) // Bajando → ocultar
+      }
+      setLastScroll(currentScroll)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScroll])
+
   return (
-    <header className="bg-rose-100 border-b shadow-lg z-50 relative">
+    <header
+      className={cn(
+        'sticky top-0 left-0 w-full bg-rose-100 border-b shadow-lg z-50 transition-transform duration-300',
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      )}
+    >
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/">
@@ -71,7 +94,6 @@ export default function Header() {
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Overlay: clic fuera del menú */}
             <motion.div
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
               initial={{ opacity: 0 }}
@@ -80,7 +102,6 @@ export default function Header() {
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Menú lateral */}
             <motion.nav
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}

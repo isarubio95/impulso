@@ -1,75 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import TarjetaPromociones from '@/components/TarjetaPromociones'
+import TarjetaPromociones from '@/components/Home/TarjetaPromociones'
 import Product from '@/assets/img/product.png'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 const productos = [
-  {
-    id: 1,
-    img: Product,
-    alt: 'Suplemento 01',
-    nombre: 'Suplemento alimentación 01',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 19.99,
-    precioAntiguo: 24.99,
-  },
-  {
-    id: 2,
-    img: Product,
-    alt: 'Suplemento 02',
-    nombre: 'Suplemento alimentación 02',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 17.49,
-    precioAntiguo: 22.99,
-  },
-  {
-    id: 3,
-    img: Product,
-    alt: 'Suplemento 03',
-    nombre: 'Suplemento alimentación 03',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 15.99,
-    precioAntiguo: 19.99,
-  },
-  {
-    id: 4,
-    img: Product,
-    alt: 'Suplemento 04',
-    nombre: 'Suplemento alimentación 04',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 12.99,
-    precioAntiguo: 16.99,
-  },
-  {
-    id: 5,
-    img: Product,
-    alt: 'Suplemento 04',
-    nombre: 'Suplemento alimentación 04',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 12.99,
-    precioAntiguo: 16.99,
-  },
-  {
-    id: 6,
-    img: Product,
-    alt: 'Suplemento 04',
-    nombre: 'Suplemento alimentación 04',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 12.99,
-    precioAntiguo: 16.99,
-  },
-  {
-    id: 7,
-    img: Product,
-    alt: 'Suplemento 04',
-    nombre: 'Suplemento alimentación 04',
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    precioNuevo: 12.99,
-    precioAntiguo: 16.99,
-  },
-]
+  { id: 1, img: Product, alt: 'Suplemento 01', nombre: 'Suplemento alimentación 01', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 19.99, precioAntiguo: 24.99 },
+  { id: 2, img: Product, alt: 'Suplemento 02', nombre: 'Suplemento alimentación 02', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 17.49, precioAntiguo: 22.99 },
+  { id: 3, img: Product, alt: 'Suplemento 03', nombre: 'Suplemento alimentación 03', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 15.99, precioAntiguo: 19.99 },
+  { id: 4, img: Product, alt: 'Suplemento 04', nombre: 'Suplemento alimentación 04', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 12.99, precioAntiguo: 16.99 },
+  { id: 5, img: Product, alt: 'Suplemento 05', nombre: 'Suplemento alimentación 05', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 13.49, precioAntiguo: 17.49 },
+  { id: 6, img: Product, alt: 'Suplemento 06', nombre: 'Suplemento alimentación 06', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 14.25, precioAntiguo: 18.00 },
+  { id: 7, img: Product, alt: 'Suplemento 07', nombre: 'Suplemento alimentación 07', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', precioNuevo: 11.99, precioAntiguo: 15.49 },
+];
 
 export default function Promociones() {
   const [cardsToShow, setCardsToShow] = useState(1)
@@ -96,14 +40,14 @@ export default function Promociones() {
   }
 
   return (
-    <section className="bg-rose-50 py-20 md:px-20 lg:px-30 flex flex-col items-center gap-6">
+    <section className="bg-rose-50 py-20 pl-2.5 pr-0 sm:px-2 sm:pr-2 flex flex-col items-center gap-8">
       {/* Controles y Carrusel */}
-      <div className="flex justify-center items-center gap-4 w-full max-w-6xl">
+      <div className="flex justify-center items-center gap-4 w-full max-w-5xl">
         <button
             aria-label="Anterior"
             onClick={handlePrev}
             disabled={currentPage === 0}
-            className={`p-2 h-fit transition ${
+            className={`hidden sm:flex p-2 h-fit lg:mr-4 transition ${
                 currentPage === 0
                 ? 'opacity-30 pointer-events-none'
                 : 'cursor-pointer hover:scale-105'
@@ -112,9 +56,9 @@ export default function Promociones() {
           <FaChevronLeft className="text-3xl text-stone-600 drop-shadow-md hover:drop-shadow-lg hover:text-rose-900 transition" />
         </button>
 
-        <div className="overflow-x-hidden w-full pb-8 -mb-2">
+        <div className="scrollbar-hide overflow-x-auto sm:overflow-hidden w-full pb-8 -mb-8 rounded-2xl scroll-smooth pr-8 sm:pr-0">
           <div
-            className="flex transition-transform duration-500 ease-in-out"
+            className="flex w-fit sm:w-full sm:transition-transform sm:duration-500 ease-in-out"
             style={{
               width: `${(productos.length * 100) / cardsToShow}%`,
               transform: `translateX(-${(100 / productos.length) * startIndex}%)`,
@@ -123,7 +67,7 @@ export default function Promociones() {
             {productos.map((producto) => (
               <div
                 key={producto.id}
-                className="px-2"
+                className="px-1.5 sm:px-2"
                 style={{
                   flex: `0 0 ${100 / productos.length}%`,
                   maxWidth: `${100 / productos.length}%`,
@@ -146,7 +90,7 @@ export default function Promociones() {
             aria-label="Siguiente"
             onClick={handleNext}
             disabled={currentPage >= totalPages - 1}
-            className={`p-2 h-fit transition ${
+            className={`hidden sm:flex p-2 lg:ml-4 h-fit transition ${
             currentPage >= totalPages - 1
             ? 'opacity-30 pointer-events-none'
             : 'cursor-pointer hover:scale-105'
@@ -157,7 +101,7 @@ export default function Promociones() {
       </div>
 
       {/* Bullets */}
-      <div className="flex gap-2">
+      <div className="hidden sm:flex gap-2">
         {Array.from({ length: totalPages }).map((_, i) => (
           <button
             key={i}
@@ -171,6 +115,9 @@ export default function Promociones() {
           />
         ))}
       </div>
+
+      {/* Ver más */}
+      <a href="/tratamientos" className="text-sm text-sky-600 hover:underline">ver más tratamientos</a>
     </section>
   )
 }
