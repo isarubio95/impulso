@@ -1,3 +1,4 @@
+// app/tienda/[slug]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import Product from '@/assets/img/product.png'
@@ -159,19 +160,24 @@ const productos = [
   },
 ];
 
-type Props = {
-  params: { slug: string }  // ✅ tipado claro para Next app router
-};
+type Params = { slug: string };
 
-export async function generateMetadata({ params }: Props) {
-  const p = productos.find(x => x.slug === params.slug);
+// Next 15: params llega como Promise en generateMetadata
+export async function generateMetadata(
+  { params }: { params: Promise<Params> }
+) {
+  const { slug } = await params;
+  const p = productos.find(x => x.slug === slug);
   if (!p) return { title: "Producto no encontrado | Impulso" };
   return { title: `${p.nombre} | Impulso`, description: p.descripcion.slice(0, 150) };
 }
 
-
-export default function ProductoPage({ params }: { params: { slug: string } }) {
-  const producto = productos.find((p) => p.slug === params.slug);
+// Next 15: también en la página
+export default async function ProductoPage(
+  { params }: { params: Promise<Params> }
+) {
+  const { slug } = await params;
+  const producto = productos.find((p) => p.slug === slug);
 
   if (!producto) {
     return (
@@ -194,7 +200,12 @@ export default function ProductoPage({ params }: { params: { slug: string } }) {
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 items-top gap-8">
         {/* Imagen */}
         <div className="relative aspect-square bg-stone-100 rounded-lg overflow-hidden">
-          <Image src={producto.img} alt={producto.nombre} fill className="object-contain p-6 drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]" />
+          <Image
+            src={producto.img}
+            alt={producto.nombre}
+            fill
+            className="object-contain p-6 drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]"
+          />
         </div>
 
         {/* Info */}        
