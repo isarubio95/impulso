@@ -5,6 +5,7 @@ type PromocionesProps = {
   imagen: StaticImageData
   alt: string
   titulo: string
+  producto: string
   descripcion: string
   precioNuevo: number
   precioAntiguo: number
@@ -14,6 +15,7 @@ export default function TarjetaPromociones({
   imagen,
   alt,
   titulo,
+  producto,
   descripcion,
   precioNuevo,
   precioAntiguo,
@@ -39,7 +41,7 @@ export default function TarjetaPromociones({
             </span>
         </div>
         <div className='pt-1'>
-            <CTA texto="VER MÁS"/>
+            <CTA href={`/tienda/${producto}`} texto="Ver más"/>
         </div>
         </div>
       

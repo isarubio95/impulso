@@ -1,26 +1,47 @@
-import Link from 'next/link'
+// components/CTA.tsx
+import Link from 'next/link';
 
 type CTAProps = {
-  texto: string
-  onClick?: () => void
-  href?: string
-  icono?: React.ReactNode
-}
+  texto: string;
+  onClick?: () => void;
+  href?: string;
+  icono?: React.ReactNode;
+  disabled?: boolean;
+};
 
-export default function CTA({ texto, onClick, href, icono}: CTAProps) {
+export default function CTA({ texto, onClick, href, icono, disabled }: CTAProps) {
   const baseStyles =
-    'inline-flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-2xl shadow hover:shadow-lg text-sm font-bold cursor-pointer hover:scale-102 transition-transform duration-300 transition'
-    
-    const contenido = (
-        <>
-            {texto}
-            {icono}
-        </>
-    )
+    'inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-600 text-white px-4 py-2 rounded-full shadow-sm hover:shadow-md text-sm font-bold transition-transform duration-300 transition cursor-pointer';
+  
+  const contenido = (
+    <>
+      {texto}
+      {icono}
+    </>
+  );
 
-    if (href) {
-        return <Link href={href} className={baseStyles}>{contenido}</Link>
-    }
+  // Si es un enlace
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={`${baseStyles} ${disabled ? 'opacity-50 pointer-events-none cursor-not-allowed hover:shadow-sm hover:scale-100' : 'hover:scale-102'}`}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : undefined}
+      >
+        {contenido}
+      </Link>
+    );
+  }
 
-    return <button onClick={onClick} className={baseStyles}>{contenido}</button>
+  // Si es un botón
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyles} ${disabled ? 'opacity-50 cursor-not-allowed hover:shadow-sm hover:scale-100' : 'hover:scale-102'}`}
+    >
+      {contenido}
+    </button>
+  );
 }

@@ -27,7 +27,7 @@ export default function Hero() {
               <p className="text-xl font-medium text-stone-700">
                 Centro de Bienestar en Logroño
               </p>
-              <CTA texto="Ir a la tienda" icono={<FaShoppingBag className="w-4 h-4 text-rose-50" />} />
+              <CTA href='/tienda' texto="Ir a la tienda" icono={<FaShoppingBag className="w-4 h-4 text-rose-50" />} />
             </div>        
           </div>
         </div>
