@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react"
-import CTA from "@/components/CTA"
 import { addToCart } from "./actions"
 
 export default function BuyBox({ productId, precio }: { productId: string; precio: number }) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import TarjetaPromociones from '@/components/Home/TarjetaPromociones'
 import Product from '@/assets/img/product.png'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { Link } from 'lucide-react'
 
 const productos = [
   { id: 1, img: Product, alt: 'Suplemento 01', producto: 'suplemento-01', nombre: 'Suplemento alimentación 01', descripcion: 'Lorem ipsum...', precioNuevo: 19.99, precioAntiguo: 24.99 },
@@ -118,7 +119,12 @@ export default function Promociones() {
       </div>
 
       {/* Ver más */}
-      <a href="/tienda" className="text-sm text-sky-600 hover:underline">Ver más productos</a>
+      <Link
+        href="/tienda" 
+        className="text-sm text-sky-600 hover:underline"
+      >
+        Ver más productos
+      </Link>
     </section>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import CTA from '@/components/CTA'
 import presoterapia from '@/assets/img/presoterapia.png'
 import terapeuta from '@/assets/img/terapeuta.png'
@@ -35,7 +36,12 @@ export default function TratamientosHome() {
       </div>
 
       {/* Ver más */}
-      <a href="/tratamientos" className="text-sm text-sky-600 hover:underline">ver más tratamientos</a>
+      <Link
+        href="/tienda" 
+        className="text-sm text-sky-600 hover:underline"
+      >
+        Ver más productos
+      </Link>
 
       {/* Citas personalizadas */}
       <div className="flex flex-col sm:flex-row items-center gap-6 hover:shadow-md transition-shadow duration-300 max-w-3xl mt-4 bg-rose-100 rounded-xl pb-0 p-6 shadow-sm">
