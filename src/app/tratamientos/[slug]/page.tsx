@@ -1,3 +1,4 @@
+// app/tratamientos/[slug]/page.tsx
 import Image from "next/image"
 import Link from "next/link"
 import PresoterapiaImg from "@/assets/img/presoterapia.png"
@@ -52,8 +53,13 @@ const tratamientos = [
   },
 ]
 
-export default function TratamientoPage({ params }: { params: { slug: string } }) {
-  const tratamiento = tratamientos.find((t) => t.slug === params.slug)
+type Params = { slug: string }
+
+export default async function TratamientoPage(
+  { params }: { params: Promise<Params> }
+) {
+  const { slug } = await params
+  const tratamiento = tratamientos.find((t) => t.slug === slug)
 
   if (!tratamiento) {
     return (
