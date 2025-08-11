@@ -36,22 +36,22 @@ export default function TiendaPage() {
           <p className="text-sm text-stone-600">
             Descubre nuestros productos y promociones.
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center sm:justify-end gap-3">
             <select
               aria-label="Ordenar productos"
-              className="border rounded-md px-3 h-9 py-2 text-sm text-stone-700 bg-white"
+              className="border w-full sm:w-fit rounded-md px-3 h-9 py-2 text-sm text-stone-700 bg-white"
               defaultValue="featured"
             >
               <option value="featured">Destacados</option>
               <option value="price-asc">Precio: menor a mayor</option>
               <option value="price-desc">Precio: mayor a menor</option>
             </select>
-            <div className="relative">
+            <div className="relative w-full sm:w-fit">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
               <input
                 type="search"
                 placeholder="Buscar…"
-                className="pl-9 border rounded-md px-3 py-2 text-sm text-stone-700 bg-white"
+                className="pl-9 border w-full rounded-md px-3 py-2 text-sm text-stone-700 bg-white"
               />
             </div>
           </div>

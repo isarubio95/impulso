@@ -22,10 +22,13 @@ export default function TarjetaTratamiento({ titulo, resumen, slug, img, alt }: 
 
                     {/* Butttons */}
                     <div className="flex gap-4 items-center mt-4">
-                        <CTA
-                            texto="Pedir cita"
-                            href={`/citas`}
-                        />
+                        <div className="w-fit">
+                            <CTA
+                                texto="Pedir cita"
+                                href={`/citas`}
+                            />
+                        </div>
+                        
                         {/* Ver más */}
                         <a href={`/tratamientos/${slug}`} className="text-sm text-sky-600 hover:underline">Saber más</a>
                     </div>

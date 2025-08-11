@@ -40,7 +40,7 @@ export default function TarjetaPromociones({
             {precioAntiguo.toFixed(2)} €
             </span>
         </div>
-        <div className='pt-1'>
+        <div className='pt-1 flex sm:w-fit w-full mx-auto'>
             <CTA href={`/tienda/${producto}`} texto="Ver más"/>
         </div>
         </div>

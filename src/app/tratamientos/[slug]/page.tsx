@@ -1,9 +1,7 @@
-// app/tratamientos/[slug]/page.tsx
 import Image from "next/image"
 import Link from "next/link"
 import PresoterapiaImg from "@/assets/img/presoterapia.png"
 
-// Datos simulados (luego pueden venir de una API o DB)
 const tratamientos = [
   {
     slug: "presoterapia",
@@ -19,7 +17,7 @@ const tratamientos = [
       { nombre: "Zonas", cantidad: "Piernas y abdomen" },
       { nombre: "Frecuencia recomendada", cantidad: "1-2 veces/semana" },
     ],
-    precioDesde: 25, // opcional
+    precioDesde: 25,
   },
   {
     slug: "masaje-paihuen",
@@ -113,7 +111,7 @@ export default async function TratamientoPage(
             </div>
           )}
 
-          {/* Precio desde (opcional) */}
+          {/* Precio desde */}
           {typeof tratamiento.precioDesde === "number" && (
             <p className="text-lg text-emerald-700 mt-3">
               Desde {tratamiento.precioDesde.toFixed(2)} €

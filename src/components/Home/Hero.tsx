@@ -22,12 +22,14 @@ export default function Hero() {
                 className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10"
                 quality={100}
             />
-            <div className='space-y-6'>
+            <div className='flex flex-col gap-6 justify-center items-center'>
               <h1 className="text-4xl font-bold text-rose-800">IMPULSO</h1>
               <p className="text-xl font-medium text-stone-700">
                 Centro de Bienestar en Logroño
               </p>
-              <CTA href='/tienda' texto="Ir a la tienda" icono={<FaShoppingBag className="w-4 h-4 text-rose-50" />} />
+              <div className='w-fit'>
+                <CTA href='/tienda' texto="Ir a la tienda" icono={<FaShoppingBag className="w-4 h-4 text-rose-50" />} />
+              </div>
             </div>        
           </div>
         </div>

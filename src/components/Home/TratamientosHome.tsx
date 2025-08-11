@@ -7,12 +7,37 @@ import presoterapia from '@/assets/img/presoterapia.png'
 import terapeuta from '@/assets/img/terapeuta.png'
 import TarjetaTratamientos from '@/components/Home/TarjetaTratamientos'
 
-const tratamientos = [
-  { titulo: 'Presoterapia', alt: 'Terapeuta aplicando presoterapia a un paciente', descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', color: 'green' },
-  { titulo: 'Masaje Paihuen', alt: 'Masaje Paihuen', descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', color: 'pink' },
-  { titulo: 'Tratamiento Facial', alt: 'Tratamiento Facial', descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', color: 'red' },
-  { titulo: 'Radiofrecuencia 448k bono 4 sesiones', alt: 'Radiofrecuencia 448k', descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', color: 'green' },
+const tratamientos = [ 
+  { 
+    slug: 'presoterapia',
+    titulo: 'Presoterapia', 
+    alt: 'Terapeuta aplicando presoterapia a un paciente', 
+    descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', 
+    color: 'green' 
+  },
+  { 
+    slug: 'masaje-paihuen',
+    titulo: 'Masaje Paihuen', 
+    alt: 'Masaje Paihuen', 
+    descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', 
+    color: 'pink' 
+  },
+  { 
+    slug: 'tratamiento-facial',
+    titulo: 'Tratamiento Facial', 
+    alt: 'Tratamiento Facial', 
+    descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', 
+    color: 'red' 
+  },
+  { 
+    slug: 'radiofrecuencia-448k-bono-4-sesiones',
+    titulo: 'Radiofrecuencia 448k bono 4 sesiones', 
+    alt: 'Radiofrecuencia 448k', 
+    descripcion: 'Lorem ipsum dolor sit amet consectetur. Fermentum arcu ultricies facilisi ultrices suscipit.', 
+    color: 'green' 
+  }
 ]
+
 
 export default function TratamientosHome() {
   return (
@@ -25,6 +50,7 @@ export default function TratamientosHome() {
         
         {tratamientos.map((tarjeta, index) => (
           <TarjetaTratamientos 
+            slug={tarjeta.slug}
             key={index}
             titulo = {tarjeta.titulo} 
             descripcion={tarjeta.descripcion}
@@ -51,7 +77,9 @@ export default function TratamientosHome() {
           <p className="text-sm text-stone-600 mb-4">
             En Impulso, hacemos una pequeña entrevista previa para valorar tus objetivos y ofrecerte un plan de tratamientos. Ofrecemos atención personalizada en función de tus necesidades desde el primer contacto.
           </p>
-          <CTA texto="VER MÁS"/>
+          <div className='w-fit'>
+            <CTA href='/citas' texto="Ver más"/>
+          </div>
         </div>
       </div>
     </section>
