@@ -37,15 +37,16 @@ export default function CitasPage() {
   const slots = useMemo(() => buildSlots(date), [date]);
 
   // Paso 2
-    const [selectedISO, setSelectedISO] = useState('');
-    const now = new Date();
-    const isToday = !!date && new Date().toISOString().slice(0, 10) === date; // boolean
+  const [selectedISO, setSelectedISO] = useState('');
+  const now = new Date();
+  const isToday = !!date && new Date().toISOString().slice(0, 10) === date;
 
   // Paso 3
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const timeLabel = (d: Date) =>
     d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -65,6 +66,49 @@ export default function CitasPage() {
     setEmail('');
     setNotes('');
   };
+
+  async function reservarCita(payload: {
+    fullName: string; phone: string; email?: string; notes?: string;
+    startsAt: string; endsAt: string;
+  }) {
+    const r = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      throw new Error(data?.error ?? 'No se pudo crear la cita');
+    }
+    return r.json();
+  }
+
+  async function handleConfirm(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!canConfirm || !selectedISO) return;
+
+    try {
+      setLoading(true);
+      const startsAt = new Date(selectedISO).toISOString();
+      const endsAt = new Date(new Date(selectedISO).getTime() + SLOT_MIN * 60 * 1000).toISOString();
+
+      await reservarCita({
+        fullName: name,
+        phone,
+        email: email || undefined,
+        notes: notes || undefined,
+        startsAt,
+        endsAt,
+      });
+
+      alert('¡Solicitud enviada! Te confirmaremos por teléfono o email.');
+      reset();
+    } catch (err: any) {
+      alert(err?.message ?? 'Ha ocurrido un error al reservar la cita.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <section className="bg-stone-50 py-16 px-4">
@@ -112,30 +156,32 @@ export default function CitasPage() {
         {step === 1 && (
           <div className="space-y-6 bg-white mx-auto w-full flex flex-col justify-center items-center p-6 rounded-md shadow-sm border border-stone-200">
             <div className='flex flex-col gap-5'>
-                <label className="block">
+              <label className="block">
                 <span className="block text-sm font-medium text-stone-700 mb-2">
-                    Fecha
+                  Fecha
                 </span>
                 <input
-                    type="date"
-                    className="w-full md:w-60 rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white"
-                    value={date}
-                    min={minDate}
-                    onChange={(e) => {
+                  type="date"
+                  className="w-full md:w-60 rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white"
+                  value={date}
+                  min={minDate}
+                  onChange={(e) => {
                     setDate(e.target.value);
                     setSelectedISO('');
-                    }}
+                  }}
                 />
-                </label>
-                
-                <div className='flex'>
-                    <CTA
-                        texto="Siguiente"
-                        onClick={() => setStep(2)}
-                        disabled={!canNext1}
-                    />
-                </div>
-            </div>            
+              </label>
+
+              <div className='flex'>
+                <div>
+                  <CTA
+                    texto="Siguiente"
+                    onClick={() => setStep(2)}
+                    disabled={!canNext1}
+                  />
+                </div>                
+              </div>
+            </div>
           </div>
         )}
 
@@ -153,7 +199,7 @@ export default function CitasPage() {
             >
               {slots.map((d) => {
                 const iso = d.toISOString();
-                const isPast = isToday && d.getTime() <= now.getTime();               
+                const isPast = isToday && d.getTime() <= now.getTime();
                 const active = selectedISO === iso;
 
                 return (
@@ -175,11 +221,13 @@ export default function CitasPage() {
 
             <div className="flex items-center gap-5">
               <a className='text-blue-700 text-sm cursor-pointer hover:underline' onClick={() => setStep(1)}>Atrás</a>
-              <CTA
+              <div>
+                <CTA
                 texto="Siguiente"
                 onClick={() => setStep(3)}
                 disabled={!canNext2}
               />
+              </div>          
             </div>
           </div>
         )}
@@ -188,13 +236,7 @@ export default function CitasPage() {
         {step === 3 && (
           <form
             className="space-y-6 bg-white p-6 rounded-md shadow-sm border border-stone-200"
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert(
-                `UI: Cita (sin guardar) el ${date} a las ${selectedTimeLabel}\nNombre: ${name}\nTel: ${phone}`
-              );
-              reset();
-            }}
+            onSubmit={handleConfirm}
           >
             <p className="text-sm text-stone-600">
               Cita: <strong>{date}</strong> a las{' '}
@@ -256,16 +298,14 @@ export default function CitasPage() {
             </div>
 
             <div className="flex items-center gap-5">
-              <a className='text-blue-700 text-sm cursor-pointer hover:underline' onClick={() => setStep(1)}>Atrás</a>
-              <button
-                type="submit"
-                disabled={!canConfirm}
-                className={`inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-600 text-white px-4 py-2 rounded-full shadow-sm text-sm font-bold cursor-pointer
-                  ${!canConfirm ? 'opacity-50 cursor-not-allowed' : ''}`}
-                aria-label="Confirmar cita"
-              >
-                CONFIRMAR CITA ✓
-              </button>
+              <a className='text-blue-700 text-sm cursor-pointer hover:underline' onClick={() => setStep(2)}>Atrás</a>
+              <div>
+                <CTA
+                  texto={loading ? 'Enviando…' : 'Confirmar cita'}
+                  onClick={handleConfirm}
+                  disabled={!canConfirm || loading}
+                />
+              </div>              
             </div>
           </form>
         )}

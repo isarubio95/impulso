@@ -3,22 +3,20 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import TarjetaPromociones from '@/components/Home/TarjetaPromociones'
-import Product from '@/assets/img/product.png'
+import ProductPlaceholder from '@/assets/img/product.png'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
-const productos = [
-  { id: 1, img: Product, alt: 'Suplemento 01', producto: 'suplemento-01', nombre: 'Suplemento alimentación 01', descripcion: 'Lorem ipsum...', precioNuevo: 19.99, precioAntiguo: 24.99 },
-  { id: 2, img: Product, alt: 'Suplemento 02', producto: 'suplemento-02', nombre: 'Suplemento alimentación 02', descripcion: 'Lorem ipsum...', precioNuevo: 17.49, precioAntiguo: 22.99 },
-  { id: 3, img: Product, alt: 'Suplemento 03', producto: 'crema-hidratante', nombre: 'Suplemento alimentación 03', descripcion: 'Lorem ipsum...', precioNuevo: 15.99, precioAntiguo: 19.99 },
-  { id: 4, img: Product, alt: 'Suplemento 04', producto: 'suplemento-04', nombre: 'Suplemento alimentación 04', descripcion: 'Lorem ipsum...', precioNuevo: 12.99, precioAntiguo: 16.99 },
-  { id: 5, img: Product, alt: 'Suplemento 05', producto: 'suplemento-05', nombre: 'Suplemento alimentación 05', descripcion: 'Lorem ipsum...', precioNuevo: 13.49, precioAntiguo: 17.49 },
-  { id: 6, img: Product, alt: 'Suplemento 06', producto: 'suplemento-06', nombre: 'Suplemento alimentación 06', descripcion: 'Lorem ipsum...', precioNuevo: 14.25, precioAntiguo: 18.00 },
-  { id: 7, img: Product, alt: 'Suplemento 07', producto: 'suplemento-07', nombre: 'Suplemento alimentación 07', descripcion: 'Lorem ipsum...', precioNuevo: 11.99, precioAntiguo: 15.49 },
-];
+type ApiPromo = {
+  id: string; title: string; blurb?: string | null;
+  priceNew?: string | number | null; priceOld?: string | number | null;
+  ctaUrl?: string | null;
+  product?: { slug: string; name: string } | null;
+};
 
 export default function Promociones() {
   const [cardsToShow, setCardsToShow] = useState(1)
   const [currentPage, setCurrentPage] = useState(0)
+  const [promos, setPromos] = useState<ApiPromo[]>([])
 
   useEffect(() => {
     const updateCardsToShow = () => {
@@ -29,7 +27,14 @@ export default function Promociones() {
     return () => window.removeEventListener('resize', updateCardsToShow)
   }, [])
 
-  const totalPages = Math.ceil(productos.length / cardsToShow)
+  useEffect(() => {
+    fetch('/api/promotions?includeProduct=1', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(setPromos)
+      .catch(() => setPromos([]))
+  }, [])
+
+  const totalPages = Math.ceil(promos.length / cardsToShow)
   const startIndex = currentPage * cardsToShow
 
   const handlePrev = () => {
@@ -61,30 +66,26 @@ export default function Promociones() {
           <div
             className="flex w-fit sm:w-full sm:transition-transform sm:duration-500 ease-in-out"
             style={{
-              width: `${(productos.length * 100) / cardsToShow}%`,
-              transform: `translateX(-${(100 / productos.length) * startIndex}%)`,
+              width: `${(promos.length * 100) / cardsToShow}%`,
+              transform: `translateX(-${(100 / promos.length) * startIndex}%)`,
             }}
           >
-            {productos.map((producto) => (
-              <div
-                key={producto.id}
-                className="px-1.5 sm:px-2"
-                style={{
-                  flex: `0 0 ${100 / productos.length}%`,
-                  maxWidth: `${100 / productos.length}%`,
-                }}
-              >
-                <TarjetaPromociones
-                  imagen={producto.img}
-                  alt={producto.alt}
-                  titulo={producto.nombre}
-                  producto={producto.producto}
-                  descripcion={producto.descripcion}
-                  precioNuevo={producto.precioNuevo}
-                  precioAntiguo={producto.precioAntiguo}
-                />
-              </div>
-            ))}
+            {promos.map((promo) => {
+              const slug = promo.product?.slug || (promo.ctaUrl?.startsWith('/tienda/') ? promo.ctaUrl.split('/').pop()! : '')
+              return (
+                <div key={promo.id} className="px-1.5 sm:px-2" style={{ flex: `0 0 ${100 / Math.max(promos.length,1)}%`, maxWidth: `${100 / Math.max(promos.length,1)}%` }}>
+                  <TarjetaPromociones
+                    imagen={ProductPlaceholder}
+                    alt={promo.title}
+                    titulo={promo.title}
+                    producto={slug}
+                    descripcion={promo.blurb || ''}
+                    precioNuevo={promo.priceNew ? Number(promo.priceNew) : 0}
+                    precioAntiguo={promo.priceOld ? Number(promo.priceOld) : 0}
+                  />
+                </div>
+              )
+            })}
           </div>
         </div>
 

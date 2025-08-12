@@ -1,25 +1,26 @@
 import TarjetaProducto from "@/app/tienda/TarjetaProducto"
-import Product from '@/assets/img/product.png'
+import ProductPlaceholder from '@/assets/img/product.png';
 import { FiSearch } from "react-icons/fi";
+import { absUrl } from "@/lib/abs-url";
 
 export const metadata = {
   title: "Tienda | Impulso Estética",
   description: "Explora nuestros productos y promociones",
 }
 
-const productos = [
-  { slug: "suplemento-01", nombre: "Suplemento 01", precio: 19.99, img: Product, descripcion: "Suplemento para aumentar la energía y el rendimiento diario." },
-  { slug: "suplemento-02", nombre: "Suplemento 02", precio: 17.49, img: Product, descripcion: "Fórmula para favorecer la recuperación muscular y física." },
-  { slug: "crema-hidratante", nombre: "Crema Hidratante", precio: 15.99, img: Product, descripcion: "Hidrata en profundidad, dejando la piel suave y tersa." },
-  { slug: "crema-de-manos", nombre: "Crema de Manos", precio: 15.99, img: Product, descripcion: "Nutre y protege las manos frente a la sequedad." },
-  { slug: "aceite-corporal", nombre: "Aceite Corporal", precio: 22.50, img: Product, descripcion: "Aceite nutritivo que suaviza y revitaliza la piel." },
-  { slug: "serum-facial", nombre: "Sérum Facial", precio: 29.99, img: Product, descripcion: "Reduce arrugas y mejora la firmeza de la piel." },
-  { slug: "mascarilla-hidratante", nombre: "Mascarilla Hidratante", precio: 12.75, img: Product, descripcion: "Aporta hidratación intensa y luminosidad al rostro." },
-  { slug: "gel-limpiador", nombre: "Gel Limpiador", precio: 10.99, img: Product, descripcion: "Limpia suavemente eliminando impurezas y exceso de grasa." },
-]
+type ApiProduct = {
+  slug: string;
+  name: string;
+  desc: string;
+  price: string | number;
+  imageUrl?: string | null;
+};
 
+export default async function TiendaPage() {
+  const url = await absUrl('/api/products');   // 👈 await aquí
+  const res = await fetch(url, { cache: 'no-store' });  
+  const { items } = (await res.json()) as { items: ApiProduct[] };
 
-export default function TiendaPage() {
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Título */}
@@ -59,14 +60,15 @@ export default function TiendaPage() {
 
         {/* Grid usando el nuevo componente */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {productos.map((p) => (
+          {items.map((p) => (
             <TarjetaProducto
               key={p.slug}
               slug={p.slug}
-              nombre={p.nombre}
-              precio={p.precio}
-              descripcion={p.descripcion}
-              img={p.img}
+              nombre={p.name}
+              precio={Number(p.price)}
+              descripcion={p.desc}
+              // usamos tu placeholder local para no tocar dominios de imágenes
+              img={ProductPlaceholder}
             />
           ))}
         </div>
