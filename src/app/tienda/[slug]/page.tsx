@@ -12,7 +12,7 @@ type ApiProduct = {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const url = await absUrl(`/api/products/${slug}`);   
+  const url = await absUrl(`/api/products/${slug}`);
   const r = await fetch(url, { cache: 'no-store' });
   if (!r.ok) return { title: "Producto no encontrado | Impulso" };
   const p = (await r.json()) as ApiProduct;
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
 
 export default async function ProductoPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const url = await absUrl(`/api/products/${slug}`);  
+  const url = await absUrl(`/api/products/${slug}`);
   const res = await fetch(url, { cache: 'no-store' });
 
   if (res.status === 404) {
@@ -37,11 +37,20 @@ export default async function ProductoPage({ params }: { params: Promise<Params>
 
   const producto = (await res.json()) as ApiProduct;
 
+  const imgSrc = producto.imageUrl && producto.imageUrl.trim() !== ''
+    ? producto.imageUrl
+    : ProductPlaceholder;
+
   return (
     <section className="bg-stone-50 py-16 px-4">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 items-top gap-8">
         <div className="relative aspect-square bg-stone-100 rounded-lg overflow-hidden">
-          <Image src={ProductPlaceholder} alt={producto.name} fill className="object-contain p-6 drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]" />
+          <Image
+            src={imgSrc}
+            alt={producto.name}
+            fill
+            className="object-contain p-6 drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]"
+          />
         </div>
 
         <div className="flex flex-col gap-3">

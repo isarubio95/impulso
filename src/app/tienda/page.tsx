@@ -60,17 +60,23 @@ export default async function TiendaPage() {
 
         {/* Grid usando el nuevo componente */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {items.map((p) => (
-            <TarjetaProducto
-              key={p.slug}
-              slug={p.slug}
-              nombre={p.name}
-              precio={Number(p.price)}
-              descripcion={p.desc}
-              // usamos tu placeholder local para no tocar dominios de imágenes
-              img={ProductPlaceholder}
-            />
-          ))}
+          {items.map((p) => {
+            const img =
+              typeof p.imageUrl === 'string' && p.imageUrl.trim() !== ''
+                ? p.imageUrl
+                : ProductPlaceholder;
+
+            return (
+              <TarjetaProducto
+                key={p.slug}
+                slug={p.slug}
+                nombre={p.name}
+                precio={Number(p.price)}
+                descripcion={p.desc}
+                img={img}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

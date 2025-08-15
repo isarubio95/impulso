@@ -73,7 +73,7 @@ export default function Promociones() {
             {promos.map((promo) => {
               const slug = promo.product?.slug || (promo.ctaUrl?.startsWith('/tienda/') ? promo.ctaUrl.split('/').pop()! : '')
               return (
-                <div key={promo.id} className="px-1.5 sm:px-2" style={{ flex: `0 0 ${100 / Math.max(promos.length,1)}%`, maxWidth: `${100 / Math.max(promos.length,1)}%` }}>
+                <div key={promo.id} className="px-1.5 sm:px-2.5" style={{ flex: `0 0 ${100 / Math.max(promos.length,1)}%`, maxWidth: `${100 / Math.max(promos.length,1)}%` }}>
                   <TarjetaPromociones
                     imagen={ProductPlaceholder}
                     alt={promo.title}

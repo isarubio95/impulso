@@ -11,11 +11,11 @@ type Props = {
 
 export default function TarjetaTratamiento({ titulo, resumen, slug, img, alt }: Props) {
     return (  
-        <article className="rounded-2xl bg-white shadow hover:shadow-md transition-shadow duration-300 p-4 ring-1 ring-black/5 overflow-hidden">
-            <div className="flex flex-col md:flex-row items-center">
+        <article className="rounded-2xl bg-white shadow hover:shadow-md transition-shadow duration-300 ring-1 ring-black/5 overflow-hidden">
+            <div className="flex flex-col-reverse md:flex-row md:items-center">
                 {/* Texto */}
-                <div className="flex-1 p-5 md:p-6">
-                    <h3 className="text-lg font-semibold text-stone-800">{titulo}</h3>
+                <div className="flex-1 p-5 md:p-8">
+                    <h3 className="text-lg text-center xs:text-left font-semibold text-stone-800">{titulo}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-stone-600">
                         {resumen}
                     </p>
@@ -35,8 +35,8 @@ export default function TarjetaTratamiento({ titulo, resumen, slug, img, alt }: 
                 </div>
 
                 {/* Imagen */}
-                <div className="flex-1 relative">
-                    <div className="relative w-auto h-56">
+                <div className="flex-1 relative bg-emerald-50">
+                    <div className="relative w-full h-56">
                         <Image
                             src={img}
                             alt={alt}
