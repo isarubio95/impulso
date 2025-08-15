@@ -1,5 +1,5 @@
 import Image, { StaticImageData } from 'next/image'
-import CTA from '@/components/CTA'
+import CTA from '../CTA'
 import { div } from 'framer-motion/client'
 
 type PromocionesProps = {

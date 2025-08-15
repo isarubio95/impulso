@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import CTA from "@/components/CTA"
+import CTA from "../components/CTA"
 import { FiSend } from "react-icons/fi";
 
 export default function FormularioContacto() {

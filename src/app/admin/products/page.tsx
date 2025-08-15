@@ -84,7 +84,7 @@ export default async function ProductsPage({
         </form>
         <Link
           href="/admin/products/new"
-          className="px-3 py-2 rounded-md bg-rose-700 hover:bg-rose-800 text-white text-sm hover:bg-rose-700"
+          className="px-3 py-2 rounded-md bg-rose-700 hover:bg-rose-800 text-white text-sm"
         >
           Nuevo producto
         </Link>

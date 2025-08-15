@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import OpinionCliente from '@/components/Home/OpinionCliente'
+import OpinionCliente from './OpinionCliente'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 const opiniones = [

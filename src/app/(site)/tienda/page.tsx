@@ -1,4 +1,4 @@
-import TarjetaProducto from "@/app/tienda/TarjetaProducto"
+import TarjetaProducto from "./TarjetaProducto"
 import ProductPlaceholder from '@/assets/img/product.png';
 import { FiSearch } from "react-icons/fi";
 import { absUrl } from "@/lib/abs-url";

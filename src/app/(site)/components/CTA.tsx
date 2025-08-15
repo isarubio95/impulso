@@ -1,4 +1,3 @@
-// components/CTA.tsx
 import Link from 'next/link';
 
 type CTAProps = {

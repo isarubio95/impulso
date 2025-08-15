@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import CTA from '@/components/CTA';
+import CTA from '../components/CTA';
 
 type Step = 1 | 2 | 3;
 

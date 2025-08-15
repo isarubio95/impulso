@@ -2,10 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import CTA from '@/components/CTA'
+import CTA from '../CTA'
 import presoterapia from '@/assets/img/presoterapia.png'
 import terapeuta from '@/assets/img/terapeuta.png'
-import TarjetaTratamientos from '@/components/Home/TarjetaTratamientos'
+import TarjetaTratamientos from './TarjetaTratamientos'
 
 const tratamientos = [ 
   { 

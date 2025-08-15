@@ -1,4 +1,4 @@
-import TarjetaTratamiento from "@/app/tratamientos/TarjetaTratamiento"
+import TarjetaTratamiento from "../tratamientos/TarjetaTratamiento"
 import Presoterapia from "@/assets/img/presoterapia.png" // cambia por tus imágenes
 
 export const metadata = {

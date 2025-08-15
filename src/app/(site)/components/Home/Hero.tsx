@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import HeroImg from '@/assets/img/hero-image.png'
 import LogoHero from '@/assets/img/logo-hero.png'
-import CTA from '@/components/CTA'
+import CTA from '../CTA'
 import { FaShoppingBag } from 'react-icons/fa'
 
 export default function Hero() {

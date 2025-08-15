@@ -1,4 +1,3 @@
-// components/Home/OpinionCliente.tsx
 import { FaStar } from 'react-icons/fa'
 
 type OpinionProps = {

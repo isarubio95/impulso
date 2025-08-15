@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import TarjetaPromociones from '@/components/Home/TarjetaPromociones'
+import TarjetaPromociones from './TarjetaPromociones'
 import ProductPlaceholder from '@/assets/img/product.png'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
