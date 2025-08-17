@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
-import { requireAdmin } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import path from 'path';
 import { mkdir, writeFile, unlink, stat, access } from 'fs/promises';
@@ -90,7 +90,7 @@ function revalidatePromos(productId: string) {
 
 // ========== CREATE / UPDATE (upsert por productId) ==========
 export async function upsertPromotion(formData: FormData) {
-  await requireAdmin();
+  await auth.requireAdmin();
 
   const file = formData.get('image') as File | null;
   if (file && file.size > MAX_UPLOAD_BYTES) {
@@ -178,7 +178,7 @@ export async function upsertPromotion(formData: FormData) {
 
 // ========== DELETE ==========
 export async function deletePromotion(productId: string) {
-  await requireAdmin();
+  await auth.requireAdmin();
   const existing = await prisma.promotion.findFirst({ where: { productId } });
   if (!existing) return;
 

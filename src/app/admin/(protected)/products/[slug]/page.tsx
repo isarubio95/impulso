@@ -124,7 +124,7 @@ export default async function EditProductPage({ params }: Params) {
       ) : (
         <form
           action={updateProduct.bind(null, product!.slug)}
-          className="space-y-4 max-w-2xl w-full max-w-2xl"
+          className="space-y-4 w-full max-w-2xl"
         >
           <input type="hidden" name="isActive" value="false" />
 

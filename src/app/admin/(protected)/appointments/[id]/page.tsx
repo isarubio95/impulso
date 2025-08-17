@@ -1,16 +1,11 @@
 export const runtime = 'nodejs';
+import { toLocalInputValue } from '@/lib/datetime';
 
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { upsertAppointment, confirmAppointment, cancelAppointment, deleteAppointment } from '../actions';
+import { upsertAppointment } from '../actions';
 
 type Params = { params: { id: string } };
-
-function toInputLocal(d?: Date | null) {
-  if (!d) return '';
-  const iso = new Date(d).toISOString();
-  return iso.slice(0, 16); // YYYY-MM-DDTHH:mm
-}
 
 export default async function AppointmentEditPage({ params }: Params) {
   const a = await prisma.appointment.findUnique({
@@ -69,7 +64,7 @@ export default async function AppointmentEditPage({ params }: Params) {
             <input
               type="datetime-local"
               name="startsAt"
-              defaultValue={toInputLocal(a.startsAt)}
+              defaultValue={toLocalInputValue(a.startsAt)}
               className="w-full rounded-md border px-3 py-2 text-sm"
               required
             />
@@ -80,7 +75,7 @@ export default async function AppointmentEditPage({ params }: Params) {
             <input
               type="datetime-local"
               name="endsAt"
-              defaultValue={toInputLocal(a.endsAt ?? null)}
+              defaultValue={toLocalInputValue(a.endsAt)}
               className="w-full rounded-md border px-3 py-2 text-sm"
             />
           </label>

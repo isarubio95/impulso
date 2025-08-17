@@ -3,15 +3,18 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import TarjetaPromociones from './TarjetaPromociones'
-import ProductPlaceholder from '@/assets/img/product.png'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import placeholder from '@/assets/img/product.png'
 
 type ApiPromo = {
-  id: string; title: string; blurb?: string | null;
-  priceNew?: string | number | null; priceOld?: string | number | null;
-  ctaUrl?: string | null;
-  product?: { slug: string; name: string } | null;
-};
+  id: string
+  title: string
+  blurb?: string | null
+  priceNew?: string | number | null
+  priceOld?: string | number | null
+  ctaUrl?: string | null
+  product?: { slug: string; name: string; imageUrl?: string | null } | null // <- opcional
+}
 
 export default function Promociones() {
   const [cardsToShow, setCardsToShow] = useState(1)
@@ -72,10 +75,12 @@ export default function Promociones() {
           >
             {promos.map((promo) => {
               const slug = promo.product?.slug || (promo.ctaUrl?.startsWith('/tienda/') ? promo.ctaUrl.split('/').pop()! : '')
+              const imagen = promo.product?.imageUrl ?? (typeof placeholder === 'string' ? placeholder : placeholder.src)
+
               return (
                 <div key={promo.id} className="px-1.5 sm:px-2.5" style={{ flex: `0 0 ${100 / Math.max(promos.length,1)}%`, maxWidth: `${100 / Math.max(promos.length,1)}%` }}>
                   <TarjetaPromociones
-                    imagen={ProductPlaceholder}
+                    imagen={imagen}
                     alt={promo.title}
                     titulo={promo.title}
                     producto={slug}

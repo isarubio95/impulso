@@ -1,9 +1,8 @@
 import Image, { StaticImageData } from 'next/image'
 import CTA from '../CTA'
-import { div } from 'framer-motion/client'
 
 type PromocionesProps = {
-  imagen: StaticImageData
+  imagen: string
   alt: string
   titulo: string
   producto: string
@@ -22,12 +21,12 @@ export default function TarjetaPromociones({
   precioAntiguo,
 }: PromocionesProps) {
   return (
-    <div className='bg-stone-200 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300'>
+    <div className='bg-stone-200 rounded-2xl ring-1 ring-black/5 shadow-sm hover:shadow-lg transition-shadow duration-300'>
       <div className="bg-white rounded-xl h-full flex flex-col">
         {/* Cabecera imagen (altura fija) */}
         <div className="bg-[radial-gradient(ellipse_at_center,_theme(colors.stone.100)_20%,_theme(colors.stone.200)_70%)]
-          w-full h-42 p-4 rounded-tl-xl rounded-tr-xl flex items-center justify-center">
-          <Image src={imagen} alt={alt} className="object-contain max-h-full w-auto drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]" />
+          w-full h-44 p-5 rounded-tl-xl rounded-tr-xl flex items-center justify-center">
+          <Image src={imagen} alt={alt} width={500} height={500} className="object-contain max-h-full w-auto drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]" />
         </div>
       </div>
       <div className='bg-white rounded-2xl text-center'>
@@ -44,7 +43,7 @@ export default function TarjetaPromociones({
           
           {/* Precios pegados al fondo */}
           <div className="flex justify-center gap-2 items-baseline mt-auto">
-            <span className="text-rose-900 text-lg font-bold">{precioNuevo.toFixed(2)} €</span>
+            <span className="text-emerald-600 text-lg font-semibold">{precioNuevo.toFixed(2)} €</span>
             <span className="line-through text-sm text-stone-400">{precioAntiguo.toFixed(2)} €</span>
           </div>
 

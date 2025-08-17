@@ -1,6 +1,13 @@
+// app/admin/(protected)/layout.tsx
+export const runtime = 'nodejs';
+
+import { requireAdmin } from '@/lib/auth-admin';
 import { FiBox, FiTag, FiCalendar } from "react-icons/fi";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // ⬇️ Protección: si no hay sesión de admin, redirige a /admin/login
+  await requireAdmin();
+
   return (
     <div className="flex min-h-screen bg-stone-50">
       <header className="sticky py-6 top-0 z-40 bg-sky-950 text-white border-b">

@@ -1,0 +1,56 @@
+export const runtime = 'nodejs';
+
+import { signIn } from '@/lib/auth';
+
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams?: { next?: string };
+}) {
+  const next = searchParams?.next ?? '';
+
+  return (
+    <section className="min-h-[75vh] bg-stone-50 text-stone-600 flex flex-col gap-6 items-center justify-center px-4">
+      <form action={signIn} className="w-full max-w-sm space-y-4 rounded-lg border bg-white p-6">
+        {/* preserve ?next=… */}
+        {next && <input type="hidden" name="next" value={next} />}
+
+        <h1 className="text-lg mb-6 font-semibold text-center text-stone-800">Iniciar sesión</h1>
+
+        <label className="block">
+          <span className="mb-1 block text-sm">Email</span>
+          <input
+            name="email"
+            type="email"
+            required
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-1 block text-sm">Contraseña</span>
+          <input
+            name="password"
+            type="password"
+            required
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="w-full mt-4 rounded-md bg-rose-600 px-4 py-2 text-sm text-white hover:bg-rose-700"
+        >
+          Entrar
+        </button>   
+      </form>
+    {/* Bloque para crear cuenta */}
+    <div className="pt-2 text-center text-sm">
+        ¿No tienes cuenta?{' '}
+        <a href="/signup" className="text-sky-700 hover:underline">
+        Crear cuenta
+        </a>
+    </div>
+    </section>
+  );
+}

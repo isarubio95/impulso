@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth-admin';
 import { Prisma } from '@prisma/client';
 import { slugify } from '@/lib/slug';
 import path from 'path';
@@ -177,7 +177,7 @@ function pickFields(fd: FormData) {
 
 // ===== Actions =====
 export async function createProduct(formData: FormData) {
-  await auth.requireAdmin();
+  await requireAdmin();
   try {
     const fields = pickFields(formData);
     const data = ProductSchema.parse(fields);
@@ -218,7 +218,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(slug: string, formData: FormData) {
-  await auth.requireAdmin();
+  await requireAdmin();
   try {
     const current = await prisma.product.findUnique({ where: { slug } });
     if (!current) throw new Error('Producto no encontrado');
@@ -283,7 +283,7 @@ export async function updateProduct(slug: string, formData: FormData) {
 }
 
 export async function deleteProduct(slug: string) {
-  await auth.requireAdmin();
+  await requireAdmin();
   const current = await prisma.product.findUnique({ where: { slug } });
   await prisma.product.delete({ where: { slug } });
   await deleteImageByUrl(current?.imageUrl);

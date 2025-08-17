@@ -11,16 +11,16 @@ const RescheduleSchema = z.object({
   phone: z.string().optional(),
   email: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
-  startsAt: z.string().optional(),       // datetime-local
-  endsAt: z.string().optional(),         // datetime-local
-  durationMinutes: z.coerce.number().int().positive().optional(),
-  status: z.enum(['pending','confirmed','cancelled']).optional(),
+  // valores de <input type="datetime-local"> (string sin zona)
+  startsAt: z.string().optional(),
+  endsAt: z.string().optional(),
+  status: z.enum(['pending', 'confirmed', 'cancelled']).optional(),
 });
 
 function toDate(v?: string) {
   const t = (v ?? '').trim();
-  if (!t) return undefined;
-  const d = new Date(t);
+  if (!t) return undefined;          // conserva la de DB si viene vacío
+  const d = new Date(t);             // "YYYY-MM-DDTHH:mm" -> local
   return isNaN(+d) ? undefined : d;
 }
 
@@ -55,20 +55,26 @@ export async function deleteAppointment(id: string) {
 export async function upsertAppointment(formData: FormData) {
   await requireAdmin();
 
+  // 1) Parseo simple
   const raw = Object.fromEntries(formData);
   const data = RescheduleSchema.parse(raw);
 
-  const current = await prisma.appointment.findUnique({ where: { id: data.id } });
+  // 2) Estado actual
+  const current = await prisma.appointment.findUnique({
+    where: { id: data.id },
+  });
   if (!current) throw new Error('Cita no encontrada');
 
-  // Fechas
+  // 3) Normalizar fechas: si el campo viene vacío, se conserva el valor actual
   const startsAt = toDate(data.startsAt) ?? current.startsAt;
   let endsAt = toDate(data.endsAt) ?? current.endsAt;
 
-  if (!toDate(data.endsAt) && data.durationMinutes && startsAt) {
-    endsAt = new Date(startsAt.getTime() + data.durationMinutes * 60_000);
+  // 4) Pequeña salvaguarda: no permitir fin < inicio
+  if (startsAt && endsAt && endsAt < startsAt) {
+    endsAt = startsAt;
   }
 
+  // 5) Actualización mínima: solo campos presentes
   await prisma.appointment.update({
     where: { id: data.id },
     data: {

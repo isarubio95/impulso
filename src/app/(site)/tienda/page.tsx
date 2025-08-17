@@ -31,7 +31,7 @@ export default async function TiendaPage() {
       </div>
 
       {/* Contenedor principal */}
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Barra de controles */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <p className="text-sm text-stone-600">
@@ -58,8 +58,8 @@ export default async function TiendaPage() {
           </div>
         </div>
 
-        {/* Grid usando el nuevo componente */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Grid para las tarjetas de producto */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {items.map((p) => {
             const img =
               typeof p.imageUrl === 'string' && p.imageUrl.trim() !== ''
