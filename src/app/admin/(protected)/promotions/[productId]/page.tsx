@@ -5,13 +5,12 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { upsertPromotion, deletePromotion } from '../actions';
 
-type Params = { params: { productId: string } };
-
+// --- Helpers ---
 function isPrismaDecimal(v: unknown): v is Prisma.Decimal {
   return !!v && typeof (v as Prisma.Decimal).toNumber === 'function';
 }
 
-function toMoney(v: unknown) {                         
+function toMoney(v: unknown) {
   const n =
     typeof v === 'number'
       ? v
@@ -27,8 +26,13 @@ function toInputDateTimeLocal(d?: Date | null) {
   return iso.slice(0, 16); // YYYY-MM-DDTHH:MM
 }
 
-export default async function PromotionEditPage({ params }: Params) {
-  const { productId } = params;
+// --- Page ---
+export default async function PromotionEditPage({
+  params,
+}: {
+  params: Promise<{ productId: string }>;
+}) {
+  const { productId } = await params;
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -47,7 +51,10 @@ export default async function PromotionEditPage({ params }: Params) {
     return (
       <section className="space-y-4">
         <p className="text-sm text-blue-600">Producto no encontrado.</p>
-        <Link href="/admin/promotions" className="inline-flex px-3 py-2 rounded-md border">
+        <Link
+          href="/admin/promotions"
+          className="inline-flex px-3 py-2 rounded-md border"
+        >
           Volver
         </Link>
       </section>
@@ -60,7 +67,8 @@ export default async function PromotionEditPage({ params }: Params) {
   const defTitle = promo?.title ?? product.name;
   const defBlurb = promo?.blurb ?? product.desc;
   const defPriceOld = promo?.priceOld ?? product.price;
-  const defImageUrl = promo?.imageUrl ?? product.imageUrl ?? '/assets/img/product.png';
+  const defImageUrl =
+    promo?.imageUrl ?? product.imageUrl ?? '/assets/img/product.png';
   const defImageAlt = promo?.imageAlt ?? product.name;
   const defCta = promo?.ctaUrl ?? `/tienda/${product.slug}`;
   const defStarts = toInputDateTimeLocal(promo?.startsAt);
@@ -72,15 +80,23 @@ export default async function PromotionEditPage({ params }: Params) {
     <section className="flex flex-col w-full space-y-6 text-stone-700 px-4 py-6">
       <div className="flex w-full max-w-2xl items-center justify-between mx-auto">
         <h1 className="text-xl font-semibold">
-          {promo ? `Editar promoción: ${product.name}` : `Promocionar: ${product.name}`}
+          {promo
+            ? `Editar promoción: ${product.name}`
+            : `Promocionar: ${product.name}`}
         </h1>
-        <Link href="/admin/promotions" className="text-sm text-blue-700 underline cursor-pointer">
+        <Link
+          href="/admin/promotions"
+          className="text-sm text-blue-700 underline cursor-pointer"
+        >
           Volver al listado
         </Link>
       </div>
 
       {/* FORM PRINCIPAL (crear/actualizar) */}
-      <form action={upsertPromotion} className="space-y-4 max-w-2xl mx-auto w-full">
+      <form
+        action={upsertPromotion}
+        className="space-y-4 max-w-2xl mx-auto w-full"
+      >
         <input type="hidden" name="productId" value={product.id} />
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -154,7 +170,9 @@ export default async function PromotionEditPage({ params }: Params) {
             accept="image/*"
             className="w-full rounded-md border px-3 py-2 text-sm"
           />
-          <p className="text-xs text-stone-500 mt-1">Máx. 5MB (se valida al guardar).</p>
+          <p className="text-xs text-stone-500 mt-1">
+            Máx. 5MB (se valida al guardar).
+          </p>
         </label>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -211,7 +229,12 @@ export default async function PromotionEditPage({ params }: Params) {
           </label>
 
           <label className="inline-flex items-center gap-2">
-            <input name="isActive" type="checkbox" value="true" defaultChecked={defActive} />
+            <input
+              name="isActive"
+              type="checkbox"
+              value="true"
+              defaultChecked={defActive}
+            />
             <span className="text-sm">Activa</span>
           </label>
 
@@ -224,7 +247,7 @@ export default async function PromotionEditPage({ params }: Params) {
         </div>
       </form>
 
-      {/* FORM BORRAR (fuera del form principal para evitar anidado) */}
+      {/* FORM BORRAR */}
       {promo && (
         <form
           action={deletePromotion.bind(null, product.id)}
