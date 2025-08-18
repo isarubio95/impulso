@@ -5,11 +5,17 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { upsertAppointment } from '../actions';
 
-type Params = { params: { id: string } };
+type Params = { id: string };
 
-export default async function AppointmentEditPage({ params }: Params) {
+export default async function AppointmentEditPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { id } = await params;
+
   const a = await prisma.appointment.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!a) {
