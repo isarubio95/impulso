@@ -25,9 +25,9 @@ const toMoney = (v: unknown) =>
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams?: Record<string, string | string[]>;
+  searchParams?: Promise<Record<string, string | string[]>>;
 }) {
-  const sp = (searchParams ?? {}) as Record<string, string | string[]>;
+  const sp = (await searchParams) ?? {};
 
   const q =
     typeof sp.q === 'string'
