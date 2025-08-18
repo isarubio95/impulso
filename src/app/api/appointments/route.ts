@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createAppointmentSchema } from '@/lib/validators'
 import { Prisma } from '@prisma/client'
+import { z } from 'zod'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -9,11 +10,9 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
   const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20', 10)))
 
-  // ✅ Tipado correcto
   const where: Prisma.AppointmentWhereInput = {}
 
   if (day) {
-    // ✅ Inicio local del día y fin = inicio + 1 día (evita problemas de TZ y 23:59:59.999)
     const startLocal = new Date(`${day}T00:00:00`)
     const endLocal = new Date(startLocal)
     endLocal.setDate(endLocal.getDate() + 1)
@@ -47,7 +46,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Rango de fechas inválido' }, { status: 400 })
     }
 
-    // ✅ Comprobación de solape global
     const overlap = await prisma.appointment.findFirst({
       where: { startsAt: { lt: ends }, endsAt: { gt: starts } },
       select: { id: true },
@@ -68,10 +66,10 @@ export async function POST(req: NextRequest) {
       },
     })
     return NextResponse.json(appt, { status: 201 })
-  } catch (err: any) {
-    if (err?.name === 'ZodError') {
-      return NextResponse.json({ error: err.flatten() }, { status: 422 })
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: err.flatten() }, { status: 422 });
     }
-    return NextResponse.json({ error: 'No se pudo crear la cita' }, { status: 400 })
+    return NextResponse.json({ error: 'No se pudo crear la cita' }, { status: 400 });
   }
 }

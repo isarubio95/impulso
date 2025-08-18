@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createPromotionSchema } from '@/lib/validators'
 import { Prisma } from '@prisma/client'
+import { z } from 'zod'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -43,8 +44,14 @@ export async function POST(req: NextRequest) {
         title: data.title,
         productId,
         blurb: data.blurb,
-        priceNew: data.priceNew !== undefined ? new Prisma.Decimal(data.priceNew as any) : undefined,
-        priceOld: data.priceOld !== undefined ? new Prisma.Decimal(data.priceOld as any) : undefined,
+        priceNew:
+          data.priceNew !== undefined
+            ? new Prisma.Decimal(data.priceNew as string | number | Prisma.Decimal)
+            : undefined,
+        priceOld:
+          data.priceOld !== undefined
+            ? new Prisma.Decimal(data.priceOld as string | number | Prisma.Decimal)
+            : undefined,
         imageUrl: data.imageUrl,
         imageAlt: data.imageAlt,
         ctaUrl: data.ctaUrl,
@@ -55,8 +62,10 @@ export async function POST(req: NextRequest) {
       },
     })
     return NextResponse.json(created, { status: 201 })
-  } catch (err: any) {
-    if (err?.name === 'ZodError') return NextResponse.json({ error: err.flatten() }, { status: 422 })
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: err.flatten() }, { status: 422 })
+    }
     return NextResponse.json({ error: 'No se pudo crear la promoción' }, { status: 400 })
   }
 }

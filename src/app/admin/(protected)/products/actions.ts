@@ -95,11 +95,19 @@ const IngredientOutSchema = z.object({
 const CompositionOutArraySchema = z.array(IngredientOutSchema);
 
 /** Normaliza cualquier formato a {nombre, cantidad}[] */
+type RawComposition = {
+  nombre?: string;
+  name?: string;
+  ingrediente?: string;
+  cantidad?: string;
+  amount?: string;
+};
+
 function parseCompositionFromString(s?: string) {
   if (s === undefined) return undefined; // update: no tocar
   const t = s.trim();
   if (t === '') return [];
-  let parsed: any;
+  let parsed: unknown;                 // 👈 antes era: any
   try {
     parsed = JSON.parse(t);
   } catch {
@@ -108,14 +116,15 @@ function parseCompositionFromString(s?: string) {
   const candidate =
     Array.isArray(parsed)
       ? parsed
-      : Array.isArray(parsed?.ingredients)
-      ? parsed.ingredients
-      : Array.isArray(parsed?.ingredientes)
-      ? parsed.ingredientes
-      : Array.isArray(parsed?.composicion)
-      ? parsed.composicion
+      : Array.isArray((parsed as { ingredients?: unknown[] })?.ingredients)
+      ? (parsed as { ingredients: unknown[] }).ingredients
+      : Array.isArray((parsed as { ingredientes?: unknown[] })?.ingredientes)
+      ? (parsed as { ingredientes: unknown[] }).ingredientes
+      : Array.isArray((parsed as { composicion?: unknown[] })?.composicion)
+      ? (parsed as { composicion: unknown[] }).composicion
       : [];
-  const mapped = (candidate as any[]).map((x) => ({
+
+  const mapped = (candidate as RawComposition[]).map((x: RawComposition) => ({ // 👈 antes era any[]
     nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
     cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
   }))

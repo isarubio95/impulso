@@ -5,9 +5,20 @@ import ProductPlaceholder from "@/assets/img/product.png";
 import { absUrl } from "@/lib/abs-url";
 
 type Params = { slug: string };
+
+type CompositionItem = {
+  nombre: string;
+  cantidad: string;
+};
+
 type ApiProduct = {
-  slug: string; name: string; desc: string; longDesc: string;
-  price: string | number; imageUrl?: string | null; composition?: any;
+  slug: string;
+  name: string;
+  desc: string;
+  longDesc: string;
+  price: string | number;
+  imageUrl?: string | null;
+  composition?: CompositionItem[];
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }) {
@@ -61,7 +72,7 @@ export default async function ProductoPage({ params }: { params: Promise<Params>
             <div>
               <h2 className="text-sm font-semibold text-stone-700 mt-3 mb-1.5">Composición</h2>
               <ul className="list-disc list-inside text-sm text-stone-600 space-y-1 mt-1">
-                {producto.composition.map((it: any, i: number) => (
+                {producto.composition.map((it: CompositionItem, i: number) => (
                   <li key={i}>
                     <span className="font-medium">{it.nombre}</span> — {it.cantidad}
                   </li>

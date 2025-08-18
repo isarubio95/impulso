@@ -1,15 +1,26 @@
 export const runtime = 'nodejs';
 
 import Link from 'next/link';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { upsertPromotion, deletePromotion } from '../actions';
 
 type Params = { params: { productId: string } };
 
-function toMoney(v: any) {
-  const n = typeof v === 'number' ? v : v?.toNumber ? v.toNumber() : Number(v);
+function isPrismaDecimal(v: unknown): v is Prisma.Decimal {
+  return !!v && typeof (v as Prisma.Decimal).toNumber === 'function';
+}
+
+function toMoney(v: unknown) {                         
+  const n =
+    typeof v === 'number'
+      ? v
+      : isPrismaDecimal(v)
+      ? v.toNumber()
+      : Number(v);
   return isNaN(n) ? '' : n.toFixed(2);
 }
+
 function toInputDateTimeLocal(d?: Date | null) {
   if (!d) return '';
   const iso = new Date(d).toISOString();

@@ -83,7 +83,9 @@ export default function CitasPage() {
     return r.json();
   }
 
-  async function handleConfirm(e?: React.FormEvent) {
+  async function handleConfirm(
+  e?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ) {
     e?.preventDefault();
     if (!canConfirm || !selectedISO) return;
 
@@ -103,8 +105,9 @@ export default function CitasPage() {
 
       alert('¡Solicitud enviada! Te confirmaremos por teléfono o email.');
       reset();
-    } catch (err: any) {
-      alert(err?.message ?? 'Ha ocurrido un error al reservar la cita.');
+    } catch (err: unknown) {               // ← 2) fuera el any
+      const msg = err instanceof Error ? err.message : 'Ha ocurrido un error al reservar la cita.';
+      alert(msg);
     } finally {
       setLoading(false);
     }

@@ -46,9 +46,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
     })
     return NextResponse.json(updated)
-  } catch (err: any) {
-    if (err?.name === 'ZodError') return NextResponse.json({ error: err.flatten() }, { status: 422 })
-    return NextResponse.json({ error: 'No se pudo actualizar' }, { status: 400 })
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: err.flatten() }, { status: 422 });
+    }
+    return NextResponse.json({ error: 'No se pudo actualizar' }, { status: 400 });
   }
 }
 

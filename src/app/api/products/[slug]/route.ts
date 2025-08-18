@@ -11,12 +11,14 @@ export async function GET(_req: NextRequest, { params }: { params: { slug: strin
 export async function PATCH(req: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const body = await req.json()
-    const data: any = { ...body }
-    if (data.price !== undefined) data.price = new Prisma.Decimal(data.price as any)
-
+    type UpdateData = { [k: string]: unknown; price?: string | number | Prisma.Decimal }
+    const data: UpdateData = { ...body }
+    if (data.price !== undefined) {
+      data.price = new Prisma.Decimal(data.price as string | number)
+    }
     const updated = await prisma.product.update({
       where: { slug: params.slug },
-      data,
+      data: data as Prisma.ProductUncheckedUpdateInput, // tipado explícito
     })
     return NextResponse.json(updated)
   } catch {

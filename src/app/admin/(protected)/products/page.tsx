@@ -7,12 +7,19 @@ import ConfirmSubmit from './ConfirmSubmit';
 const PAGE_SIZE = 10;
 
 // helper para mostrar Decimals de Prisma como precio
+function isPrismaDecimal(v: unknown): v is Prisma.Decimal {
+  return !!v && typeof (v as Prisma.Decimal).toNumber === 'function';
+}
+
 const toMoney = (v: unknown) =>
-  (typeof v === 'number'
-    ? v
-    : (v as any)?.toNumber
-    ? (v as any).toNumber()
-    : Number(v)
+  (
+    typeof v === 'number'
+      ? v
+      : typeof v === 'string'
+      ? Number(v)
+      : isPrismaDecimal(v)
+      ? v.toNumber()
+      : Number(v)
   ).toFixed(2);
 
 export default async function ProductsPage({

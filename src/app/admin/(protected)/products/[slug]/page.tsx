@@ -34,12 +34,20 @@ export default async function EditProductPage({ params }: Params) {
   }
 
   // --- Normalización para que CompositionEditor vea siempre { nombre, cantidad }[] ---
+  type RawComposition = {
+  nombre?: string;
+  name?: string;
+  ingrediente?: string;
+  cantidad?: string;
+  amount?: string;
+  };
+
   const compInitial: Array<{ nombre: string; cantidad?: string }> =
-    Array.isArray((product as any)?.composition)
-      ? ((product as any).composition as any[]).map((x) => ({
-          nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
-          cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
-        })).filter((x) => x.nombre !== '')
+    Array.isArray((product as { composition?: RawComposition[] })?.composition)
+      ? (product!.composition as RawComposition[]).map((x) => ({
+          nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? "").trim(),
+          cantidad: String(x?.cantidad ?? x?.amount ?? "").trim(),
+        })).filter((x) => x.nombre !== "")
       : [];
 
   const currentImageUrl = isNew ? '' : (product!.imageUrl ?? '');

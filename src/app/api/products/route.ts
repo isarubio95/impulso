@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createProductSchema } from '@/lib/validators'
 import { Prisma } from '@prisma/client'
+import { z } from 'zod';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -42,16 +43,18 @@ export async function POST(req: NextRequest) {
       data: {
         slug: data.slug,
         name: data.name,
-        price: new Prisma.Decimal(data.price as any),
+        price: new Prisma.Decimal(data.price as string | number | Prisma.Decimal),
         desc: data.desc,
         imageUrl: data.imageUrl,
-        composition: data.composition as any,
+        composition: data.composition as Prisma.InputJsonValue,
         isActive: data.isActive ?? true,
       },
     })
     return NextResponse.json(created, { status: 201 })
-  } catch (err: any) {
-    if (err?.name === 'ZodError') return NextResponse.json({ error: err.flatten() }, { status: 422 })
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: err.flatten() }, { status: 422 })
+    }
     return NextResponse.json({ error: 'No se pudo crear el producto' }, { status: 400 })
   }
 }
