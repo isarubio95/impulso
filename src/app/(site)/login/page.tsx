@@ -1,13 +1,15 @@
 export const runtime = 'nodejs';
 
+import Link from 'next/link';
 import { signIn } from '@/lib/auth';
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: { next?: string };
+  searchParams?: Promise<{ next?: string }>;
 }) {
-  const next = searchParams?.next ?? '';
+  const sp = await searchParams;
+  const next = sp?.next ?? '';
 
   return (
     <section className="min-h-[75vh] bg-stone-50 text-stone-600 flex flex-col gap-6 items-center justify-center px-4">
@@ -42,15 +44,16 @@ export default function LoginPage({
           className="w-full mt-4 rounded-md bg-rose-600 px-4 py-2 text-sm text-white hover:bg-rose-700"
         >
           Entrar
-        </button>   
+        </button>
       </form>
-    {/* Bloque para crear cuenta */}
-    <div className="pt-2 text-center text-sm">
+
+      {/* Bloque para crear cuenta */}
+      <div className="pt-2 text-center text-sm">
         ¿No tienes cuenta?{' '}
-        <a href="/signup" className="text-sky-700 hover:underline">
-        Crear cuenta
-        </a>
-    </div>
+        <Link href="/signup" className="text-sky-700 hover:underline">
+          Crear cuenta
+        </Link>
+      </div>
     </section>
   );
 }
