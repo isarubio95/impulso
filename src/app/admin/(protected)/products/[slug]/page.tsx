@@ -8,15 +8,20 @@ import CompositionEditor from '../CompositionEditor';
 import NameSlugFields from '../NameSlugFields';
 import ImageInput from '../ImageInput';
 
-type Params = { params: { slug: string } };
+type Params = { slug: string };
 
-export default async function EditProductPage({ params }: Params) {
-  const isNew = params.slug === 'new';
+export default async function EditProductPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+  const isNew = slug === 'new';
 
   const product = isNew
     ? null
     : await prisma.product.findUnique({
-        where: { slug: params.slug },
+        where: { slug },
       });
 
   if (!isNew && !product) {
@@ -35,19 +40,19 @@ export default async function EditProductPage({ params }: Params) {
 
   // --- Normalización para que CompositionEditor vea siempre { nombre, cantidad }[] ---
   type RawComposition = {
-  nombre?: string;
-  name?: string;
-  ingrediente?: string;
-  cantidad?: string;
-  amount?: string;
+    nombre?: string;
+    name?: string;
+    ingrediente?: string;
+    cantidad?: string;
+    amount?: string;
   };
 
   const compInitial: Array<{ nombre: string; cantidad?: string }> =
     Array.isArray((product as { composition?: RawComposition[] })?.composition)
       ? (product!.composition as RawComposition[]).map((x) => ({
-          nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? "").trim(),
-          cantidad: String(x?.cantidad ?? x?.amount ?? "").trim(),
-        })).filter((x) => x.nombre !== "")
+          nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
+          cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
+        })).filter((x) => x.nombre !== '')
       : [];
 
   const currentImageUrl = isNew ? '' : (product!.imageUrl ?? '');
