@@ -7,13 +7,14 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-function toPlain(p: { slug: string; name: string; desc: string | null; price: any; imageUrl: string | null }) {
-  const price =
-    typeof p.price === 'number'
-      ? p.price
-      : typeof p.price?.toNumber === 'function'
-      ? p.price.toNumber()
-      : Number(p.price)
+function toPlain(p: {
+  slug: string
+  name: string
+  desc: string | null
+  price: number | Prisma.Decimal
+  imageUrl: string | null
+}) {
+  const price = typeof p.price === 'number' ? p.price : p.price.toNumber()
   return {
     slug: p.slug,
     name: p.name,
