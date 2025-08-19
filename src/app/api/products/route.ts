@@ -1,82 +1,60 @@
-// src/app/api/promotions/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import type { Prisma } from '@prisma/client'
+import { createProductSchema } from '@/lib/validators'
+import { Prisma } from '@prisma/client'
+import { z } from 'zod';
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const q = searchParams.get('q') ?? ''
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+  const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('pageSize') || '12', 10)))
 
-function dec(x: number | Prisma.Decimal | null): number | null {
-  return x === null ? null : typeof x === 'number' ? x : x.toNumber()
+  const where: Prisma.ProductWhereInput = q
+    ? {
+        isActive: true,
+        OR: [
+          { name: { contains: q, mode: 'insensitive' as Prisma.QueryMode } },
+          { slug: { contains: q, mode: 'insensitive' as Prisma.QueryMode } },
+          { desc: { contains: q, mode: 'insensitive' as Prisma.QueryMode } },
+        ],
+      }
+    : { isActive: true }
+
+  const [items, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.product.count({ where }),
+  ])
+
+  return NextResponse.json({ items, total, page, pageSize })
 }
 
-export async function GET(req: Request) {
-  const url = new URL(req.url)
-  const includeProduct =
-    ['1', 'true', 'yes', 'on'].includes((url.searchParams.get('includeProduct') || '').toLowerCase())
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const data = createProductSchema.parse(body)
 
-  const now = new Date()
-
-  if (includeProduct) {
-    const rows = await prisma.promotion.findMany({
-      where: {
-        isActive: true,
-        OR: [{ startsAt: null }, { startsAt: { lte: now } }],
-        AND: [{ OR: [{ endsAt: null }, { endsAt: { gte: now } }] }],
-      },
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        blurb: true,
-        priceNew: true,
-        priceOld: true,
-        ctaUrl: true,
-        product: { select: { slug: true, name: true, imageUrl: true } },
+    const created = await prisma.product.create({
+      data: {
+        slug: data.slug,
+        name: data.name,
+        price: new Prisma.Decimal(data.price as string | number | Prisma.Decimal),
+        desc: data.desc,
+        imageUrl: data.imageUrl,
+        composition: data.composition as Prisma.InputJsonValue,
+        isActive: data.isActive ?? true,
       },
     })
-
-    const items = rows.map(r => ({
-      id: r.id,
-      title: r.title,
-      blurb: r.blurb ?? null,
-      priceNew: dec(r.priceNew),
-      priceOld: dec(r.priceOld),
-      ctaUrl: r.ctaUrl ?? null,
-      product: r.product
-        ? { slug: r.product.slug, name: r.product.name, imageUrl: r.product.imageUrl }
-        : null,
-    }))
-
-    return NextResponse.json({ items })
+    return NextResponse.json(created, { status: 201 })
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: err.flatten() }, { status: 422 })
+    }
+    return NextResponse.json({ error: 'No se pudo crear el producto' }, { status: 400 })
   }
-
-  const rows = await prisma.promotion.findMany({
-    where: {
-      isActive: true,
-      OR: [{ startsAt: null }, { startsAt: { lte: now } }],
-      AND: [{ OR: [{ endsAt: null }, { endsAt: { gte: now } }] }],
-    },
-    orderBy: { updatedAt: 'desc' },
-    select: {
-      id: true,
-      title: true,
-      blurb: true,
-      priceNew: true,
-      priceOld: true,
-      ctaUrl: true,
-    },
-  })
-
-  const items = rows.map(r => ({
-    id: r.id,
-    title: r.title,
-    blurb: r.blurb ?? null,
-    priceNew: dec(r.priceNew),
-    priceOld: dec(r.priceOld),
-    ctaUrl: r.ctaUrl ?? null,
-  }))
-
-  return NextResponse.json({ items })
 }

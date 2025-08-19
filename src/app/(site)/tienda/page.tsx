@@ -16,32 +16,10 @@ type ApiProduct = {
   imageUrl?: string | null;
 };
 
-// Parseo defensivo de JSON para evitar "Unexpected token '<'"
-async function readJSON(res: Response) {
-  const ct = res.headers.get('content-type') || ''
-  if (!res.ok) {
-    const body = await res.text()
-    throw new Error(`Fetch ${res.url} -> ${res.status} ${res.statusText}\n` + body.slice(0, 500))
-  }
-  if (!ct.includes('application/json')) {
-    const body = await res.text()
-    throw new Error(`Respuesta no-JSON desde ${res.url}. content-type="${ct}". Primera parte:\n` + body.slice(0, 500))
-  }
-  return res.json()
-}
-
 export default async function TiendaPage() {
-  let items: ApiProduct[] = []
-
-  try {
-    const url = await absUrl('/api/products')
-    const res = await fetch(url, { cache: 'no-store' })
-    const data = (await readJSON(res)) as { items: ApiProduct[] }
-    items = data.items ?? []
-  } catch (e) {
-    console.error('Error cargando productos:', e)
-    items = []
-  }
+  const url = await absUrl('/api/products');
+  const res = await fetch(url, { cache: 'no-store' });  
+  const { items } = (await res.json()) as { items: ApiProduct[] };
 
   return (
     <section className="bg-stone-50 py-16 px-4">
@@ -86,7 +64,7 @@ export default async function TiendaPage() {
             const img =
               typeof p.imageUrl === 'string' && p.imageUrl.trim() !== ''
                 ? p.imageUrl
-                : ProductPlaceholder
+                : ProductPlaceholder;
 
             return (
               <TarjetaProducto
@@ -97,16 +75,9 @@ export default async function TiendaPage() {
                 descripcion={p.desc}
                 img={img}
               />
-            )
+            );
           })}
         </div>
-
-        {/* Vacío */}
-        {items.length === 0 && (
-          <p className="text-center text-stone-500 text-sm">
-            No hay productos disponibles ahora mismo.
-          </p>
-        )}
       </div>
     </section>
   )
