@@ -10,13 +10,16 @@ const patchSchema = z.object({
   endsAt: z.string().datetime().optional(),
 })
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, ctx: unknown) {
+  const { params } = ctx as { params: { id: string } }
   const appt = await prisma.appointment.findUnique({ where: { id: params.id } })
   if (!appt) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   return NextResponse.json(appt)
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, ctx: unknown) {
+  const { params } = ctx as { params: { id: string } }
+
   try {
     const data = patchSchema.parse(await req.json())
 
@@ -55,7 +58,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, ctx: unknown) {
+  const { params } = ctx as { params: { id: string } }
+
   try {
     await prisma.appointment.delete({ where: { id: params.id } })
     return NextResponse.json({ ok: true })
@@ -63,4 +68,3 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: 'No se pudo borrar' }, { status: 400 })
   }
 }
-
