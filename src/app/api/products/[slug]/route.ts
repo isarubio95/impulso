@@ -1,14 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
+// src/app/api/products/[slug]/route.ts
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@prisma/client'
 
-export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
-  const item = await prisma.product.findUnique({ where: { slug: params.slug } })
+function getSlug(req: Request): string {
+  const url = new URL(req.url)
+  const parts = url.pathname.replace(/\/+$/, '').split('/')
+  return parts[parts.length - 1] // .../products/[slug]
+}
+
+export async function GET(req: Request) {
+  const slug = getSlug(req)
+  const item = await prisma.product.findUnique({ where: { slug } })
   if (!item) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   return NextResponse.json(item)
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function PATCH(req: Request) {
+  const slug = getSlug(req)
   try {
     const body = await req.json()
     type UpdateData = { [k: string]: unknown; price?: string | number | Prisma.Decimal }
@@ -17,8 +26,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
       data.price = new Prisma.Decimal(data.price as string | number)
     }
     const updated = await prisma.product.update({
-      where: { slug: params.slug },
-      data: data as Prisma.ProductUncheckedUpdateInput, // tipado explícito
+      where: { slug },
+      data: data as Prisma.ProductUncheckedUpdateInput,
     })
     return NextResponse.json(updated)
   } catch {
@@ -26,9 +35,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(req: Request) {
+  const slug = getSlug(req)
   try {
-    await prisma.product.delete({ where: { slug: params.slug } })
+    await prisma.product.delete({ where: { slug } })
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json({ error: 'No se pudo borrar' }, { status: 400 })
