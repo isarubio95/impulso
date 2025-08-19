@@ -63,3 +63,4 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: 'No se pudo borrar' }, { status: 400 })
   }
 }
+
