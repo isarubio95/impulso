@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+// src/app/api/appointments/[id]/route.ts
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 
@@ -9,13 +10,13 @@ const patchSchema = z.object({
   endsAt: z.string().datetime().optional(),
 })
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const appt = await prisma.appointment.findUnique({ where: { id: params.id } })
   if (!appt) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   return NextResponse.json(appt)
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const data = patchSchema.parse(await req.json())
 
@@ -48,13 +49,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json(updated)
   } catch (err: unknown) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.flatten() }, { status: 422 });
+      return NextResponse.json({ error: err.flatten() }, { status: 422 })
     }
-    return NextResponse.json({ error: 'No se pudo actualizar' }, { status: 400 });
+    return NextResponse.json({ error: 'No se pudo actualizar' }, { status: 400 })
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   try {
     await prisma.appointment.delete({ where: { id: params.id } })
     return NextResponse.json({ ok: true })
