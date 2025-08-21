@@ -8,10 +8,6 @@ export const metadata = {
   description: "Explora nuestros productos y promociones",
 }
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 type ApiProduct = {
   slug: string;
   name: string;

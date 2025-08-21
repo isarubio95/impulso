@@ -13,10 +13,6 @@ import { cn } from '@/lib/utils'
 
 type Me = { id: string; name: string | null; email: string; role: 'user' | 'admin' } | null;
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 export default function Header() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
