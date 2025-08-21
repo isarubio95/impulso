@@ -3,6 +3,10 @@
 import { useMemo, useState } from 'react';
 import CTA from '../components/CTA';
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 type Step = 1 | 2 | 3;
 
 const SLOT_MIN = 30;

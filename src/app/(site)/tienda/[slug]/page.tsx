@@ -4,6 +4,10 @@ import ProductPlaceholder from "@/assets/img/product.png";
 import { absUrl } from "@/lib/abs-url";
 import AddToCartButton from "@/app/(site)/components/cart/AddToCartButton";
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 type Params = { slug: string };
 
 type CompositionItem = {

@@ -6,6 +6,7 @@ import TarjetaPromociones from './TarjetaPromociones'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import placeholder from '@/assets/img/product.png'
 
+
 type ApiPromo = {
   id: string
   title: string
