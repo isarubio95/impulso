@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth-admin';
-import { FiBox, FiTag, FiCalendar } from "react-icons/fi";
+import { FiBox, FiTag, FiCalendar, FiActivity } from "react-icons/fi";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // ⬇️ Protección: si no hay sesión de admin, redirige a /admin/login
@@ -36,6 +36,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               <FiCalendar className="w-4 h-4" aria-hidden="true" />
               Citas
+            </Link>
+
+            <Link
+              href="/admin/treatments"
+              className="inline-flex items-center gap-3 px-4 py-2 bg-sky-900 text-white rounded hover:bg-sky-800"
+            >
+              <FiActivity className="w-4 h-4" aria-hidden="true" />
+              Tratamientos
             </Link>
           </nav>
         </div>

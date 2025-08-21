@@ -25,10 +25,12 @@ export default function TarjetaProducto({
   }).format(precio);
 
   return (
-    <div className={`flex h-full flex-col rounded-xl bg-white shadow-md ring-1 ring-black/5 hover:shadow-lg transition-shadow duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${className}`}>
+    <div className={`flex h-full flex-col rounded-xl bg-white shadow-md ring-1 ring-black/10 hover:shadow-lg transition-shadow duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 ${className}`}>
       
       {/* Imagen */}
-      <Link href={`/tienda/${slug}`} className="relative block aspect-square max-h-[220px] overflow-hidden bg-stone-100 rounded-t-xl">
+      <Link href={`/tienda/${slug}`} 
+        className="bg-[radial-gradient(ellipse_at_center,_theme(colors.stone.50)_20%,_theme(colors.stone.200)_70%)]
+          relative block aspect-square max-h-[220px] overflow-hidden rounded-t-xl">
         <Image
           src={img}
           alt={nombre}
@@ -39,7 +41,7 @@ export default function TarjetaProducto({
       </Link>
 
       {/* Contenido */}
-      <div className="flex flex-1 flex-col gap-3 pt-3 px-5 pb-4">
+      <div className="flex flex-1 flex-col gap-3 py-4 px-5">
         <h3 className="text-base font-semibold text-stone-800 text-center line-clamp-2" itemProp="name">
           {nombre}
         </h3>

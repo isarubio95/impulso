@@ -1,8 +1,8 @@
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
-import BuyBox from "./BuyBox";
 import ProductPlaceholder from "@/assets/img/product.png";
 import { absUrl } from "@/lib/abs-url";
+import AddToCartButton from "@/app/(site)/components/cart/AddToCartButton";
 
 type Params = { slug: string };
 
@@ -52,6 +52,10 @@ export default async function ProductoPage({ params }: { params: Promise<Params>
     ? producto.imageUrl
     : ProductPlaceholder;
 
+  // Asegura string para el carrito (Next static image -> usa .src)
+  const imageForCart: string =
+    typeof imgSrc === 'string' ? imgSrc : (imgSrc as StaticImageData).src;
+
   return (
     <section className="bg-stone-50 py-16 px-4">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 items-top gap-8">
@@ -82,7 +86,14 @@ export default async function ProductoPage({ params }: { params: Promise<Params>
           )}
 
           <p className="text-lg text-emerald-700 mt-3">{Number(producto.price).toFixed(2)} €</p>
-          <BuyBox precio={Number(producto.price)} productId={producto.slug} />
+
+          <AddToCartButton
+            id={slug}
+            name={producto.name}
+            price={Number(producto.price)}
+            image={imageForCart}
+            qty={1}
+          />
 
           <Link href="/tienda" className="text-sm text-sky-700 hover:underline mt-4">Volver a la tienda</Link>
         </div>
