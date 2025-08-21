@@ -18,8 +18,15 @@ function toIncluye(comp: unknown): IncluyeItem[] {
   if (!Array.isArray(comp)) return []
   return comp
     .map((it) => {
-      const nombre = typeof it?.nombre === 'string' ? it.nombre : String((it as any)?.nombre ?? '')
-      const cantidad = typeof it?.cantidad === 'string' ? it.cantidad : String((it as any)?.cantidad ?? '')
+      let nombre = ''
+      let cantidad = ''
+      if (typeof it === 'object' && it !== null) {
+        const obj = it as Record<string, unknown>
+        nombre = typeof obj.nombre === 'string' ? obj.nombre : String(obj.nombre ?? '')
+        cantidad = typeof obj.cantidad === 'string' ? obj.cantidad : String(obj.cantidad ?? '')
+      } else {
+        nombre = String(it ?? '')
+      }
       return { nombre, cantidad }
     })
     .filter(it => it.nombre.length > 0 || it.cantidad.length > 0)
