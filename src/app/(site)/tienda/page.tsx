@@ -6,7 +6,7 @@ import { absUrl } from "@/lib/abs-url";
 export const metadata = {
   title: "Tienda | Impulso Estética",
   description: "Explora nuestros productos y promociones",
-};
+}
 
 type ApiProduct = {
   slug: string;
@@ -16,65 +16,10 @@ type ApiProduct = {
   imageUrl?: string | null;
 };
 
-function isApiProduct(value: unknown): value is ApiProduct {
-  if (typeof value !== "object" || value === null) return false;
-  const obj = value as Record<string, unknown>;
-  const priceType = typeof obj.price;
-  return (
-    typeof obj.slug === "string" &&
-    typeof obj.name === "string" &&
-    typeof obj.desc === "string" &&
-    (priceType === "number" || priceType === "string")
-  );
-}
-
-function isApiProductArray(value: unknown): value is ApiProduct[] {
-  return Array.isArray(value) && value.every(isApiProduct);
-}
-
-function extractProducts(data: unknown): ApiProduct[] {
-  if (typeof data !== "object" || data === null) return [];
-  // { items: ApiProduct[] }
-  if ("items" in data) {
-    const v = (data as { items: unknown }).items;
-    if (isApiProductArray(v)) return v;
-  }
-  // { data: ApiProduct[] }
-  if ("data" in data) {
-    const v = (data as { data: unknown }).data;
-    if (isApiProductArray(v)) return v;
-  }
-  return [];
-}
-
-async function fetchProducts(): Promise<ApiProduct[]> {
-  try {
-    const url = await absUrl("/api/products");
-    const res = await fetch(url, { cache: "no-store" });
-
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      console.error("GET /api/products failed", res.status, txt.slice(0, 200));
-      return [];
-    }
-
-    const ct = res.headers.get("content-type") || "";
-    if (!ct.includes("application/json")) {
-      const txt = await res.text().catch(() => "");
-      console.error("GET /api/products non-JSON", res.status, txt.slice(0, 200));
-      return [];
-    }
-
-    const raw = await res.json().catch(() => null);
-    return extractProducts(raw);
-  } catch (err) {
-    console.error("GET /api/products error", err);
-    return [];
-  }
-}
-
 export default async function TiendaPage() {
-  const items = await fetchProducts();
+  const url = await absUrl('/api/products');
+  const res = await fetch(url, { cache: 'no-store' });  
+  const { items } = (await res.json()) as { items: ApiProduct[] };
 
   return (
     <section className="bg-stone-50 py-16 px-4">
@@ -114,32 +59,26 @@ export default async function TiendaPage() {
         </div>
 
         {/* Grid para las tarjetas de producto */}
-        {items.length === 0 ? (
-          <div className="text-center text-sm text-stone-500 py-8">
-            No hay productos disponibles ahora mismo.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {items.map((p) => {
-              const img =
-                typeof p.imageUrl === "string" && p.imageUrl.trim() !== ""
-                  ? p.imageUrl
-                  : (ProductPlaceholder as unknown as string); // sin `any`
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {items.map((p) => {
+            const img =
+              typeof p.imageUrl === 'string' && p.imageUrl.trim() !== ''
+                ? p.imageUrl
+                : ProductPlaceholder;
 
-              return (
-                <TarjetaProducto
-                  key={p.slug}
-                  slug={p.slug}
-                  nombre={p.name}
-                  precio={Number(p.price)}
-                  descripcion={p.desc}
-                  img={img}
-                />
-              );
-            })}
-          </div>
-        )}
+            return (
+              <TarjetaProducto
+                key={p.slug}
+                slug={p.slug}
+                nombre={p.name}
+                precio={Number(p.price)}
+                descripcion={p.desc}
+                img={img}
+              />
+            );
+          })}
+        </div>
       </div>
     </section>
-  );
+  )
 }
