@@ -16,10 +16,44 @@ type ApiProduct = {
   imageUrl?: string | null;
 };
 
+async function fetchProducts(): Promise<ApiProduct[]> {
+  try {
+    const url = await absUrl('/api/products')
+    const res = await fetch(url, { cache: 'no-store' })
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '')
+      console.error('GET /api/products failed', res.status, txt.slice(0, 200))
+      return []
+    }
+
+    const ct = res.headers.get('content-type') || ''
+    if (!ct.includes('application/json')) {
+      const txt = await res.text().catch(() => '')
+      console.error('GET /api/products non-JSON', res.status, txt.slice(0, 200))
+      return []
+    }
+
+    const data = await res.json().catch(() => null)
+
+    // acepta { items: [...] } o { data: [...] } por si el API cambia
+    if (data && Array.isArray((data as any).items)) {
+      return (data as { items: ApiProduct[] }).items
+    }
+    if (data && Array.isArray((data as any).data)) {
+      return (data as { data: ApiProduct[] }).data
+    }
+
+    console.error('GET /api/products unexpected JSON shape', data)
+    return []
+  } catch (err) {
+    console.error('GET /api/products error', err)
+    return []
+  }
+}
+
 export default async function TiendaPage() {
-  const url = await absUrl('/api/products');
-  const res = await fetch(url, { cache: 'no-store' });  
-  const { items } = (await res.json()) as { items: ApiProduct[] };
+  const items = await fetchProducts()
 
   return (
     <section className="bg-stone-50 py-16 px-4">
@@ -59,25 +93,31 @@ export default async function TiendaPage() {
         </div>
 
         {/* Grid para las tarjetas de producto */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {items.map((p) => {
-            const img =
-              typeof p.imageUrl === 'string' && p.imageUrl.trim() !== ''
-                ? p.imageUrl
-                : ProductPlaceholder;
+        {items.length === 0 ? (
+          <div className="text-center text-sm text-stone-500 py-8">
+            No hay productos disponibles ahora mismo.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {items.map((p) => {
+              const img =
+                typeof p.imageUrl === 'string' && p.imageUrl.trim() !== ''
+                  ? p.imageUrl
+                  : (ProductPlaceholder as unknown as string)
 
-            return (
-              <TarjetaProducto
-                key={p.slug}
-                slug={p.slug}
-                nombre={p.name}
-                precio={Number(p.price)}
-                descripcion={p.desc}
-                img={img}
-              />
-            );
-          })}
-        </div>
+              return (
+                <TarjetaProducto
+                  key={p.slug}
+                  slug={p.slug}
+                  nombre={p.name}
+                  precio={Number(p.price)}
+                  descripcion={p.desc}
+                  img={img}
+                />
+              )
+            })}
+          </div>
+        )}
       </div>
     </section>
   )
