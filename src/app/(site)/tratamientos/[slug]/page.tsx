@@ -1,65 +1,65 @@
-import Image from "next/image"
-import Link from "next/link"
-import PresoterapiaImg from "@/assets/img/presoterapia.png"
+import Image, { type StaticImageData } from "next/image";
+import Link from "next/link";
+import PresoterapiaImg from "@/assets/img/presoterapia.png";
+import { absUrl } from "@/lib/abs-url";
 
-const tratamientos = [
-  {
-    slug: "presoterapia",
-    titulo: "Presoterapia",
-    img: PresoterapiaImg,
-    descripcion: `
-      Tratamiento no invasivo que mejora la circulación y favorece el drenaje linfático, ayudando a reducir la retención de líquidos y la sensación de piernas cansadas.
-      Ideal como apoyo en procesos de remodelación corporal y recuperación deportiva.
-    `,
-    incluye: [
-      { nombre: "Duración por sesión", cantidad: "30 min" },
-      { nombre: "Ciclos de compresión", cantidad: "Programados" },
-      { nombre: "Zonas", cantidad: "Piernas y abdomen" },
-      { nombre: "Frecuencia recomendada", cantidad: "1-2 veces/semana" },
-    ],
-    precioDesde: 25,
-  },
-  {
-    slug: "masaje-paihuen",
-    titulo: "Masaje Paihuen",
-    img: PresoterapiaImg,
-    descripcion: `
-      Masaje relajante y descontracturante que combina maniobras profundas y precisas para liberar tensiones, reducir el estrés y mejorar el bienestar general.
-    `,
-    incluye: [
-      { nombre: "Duración por sesión", cantidad: "50 min" },
-      { nombre: "Técnica", cantidad: "Relajante/Descontracturante" },
-      { nombre: "Zona", cantidad: "Espalda, cuello y hombros" },
-      { nombre: "Aceites", cantidad: "Vegetales aromáticos" },
-    ],
-    precioDesde: 35,
-  },
-  {
-    slug: "tratamiento-facial",
-    titulo: "Tratamiento Facial",
-    img: PresoterapiaImg,
-    descripcion: `
-      Limpieza profunda con exfoliación, extracción suave e hidratación intensiva. Aporta luminosidad y mejora la textura de la piel, adaptado a tu tipo de piel.
-    `,
-    incluye: [
-      { nombre: "Duración", cantidad: "60 min" },
-      { nombre: "Fases", cantidad: "Limpieza + Exfoliación + Mascarilla + Hidratación" },
-      { nombre: "Tipo de piel", cantidad: "Personalizado" },
-      { nombre: "Resultados", cantidad: "Luminosidad y suavidad" },
-    ],
-    precioDesde: 40,
-  },
-]
+type Params = { slug: string };
 
-type Params = { slug: string }
+type IncluyeItem = { nombre: string; cantidad: string };
 
-export default async function TratamientoPage(
-  { params }: { params: Promise<Params> }
-) {
-  const { slug } = await params
-  const tratamiento = tratamientos.find((t) => t.slug === slug)
+type ApiTreatment = {
+  slug: string;
+  titulo: string;
+  descripcion: string;
+  img?: string | null;
+  alt?: string | null;
+  incluye?: unknown;
+  precioDesde?: number | null;
+};
 
-  if (!tratamiento) {
+function normalizeIncluye(value: unknown): IncluyeItem[] {
+  if (!Array.isArray(value)) return [];
+  type MaybeIncluye = { nombre?: unknown; cantidad?: unknown };
+  const arr = value as MaybeIncluye[];
+  return arr
+    .map((it) => {
+      const nombre = typeof it.nombre === "string" ? it.nombre : "";
+      const cantidad = typeof it.cantidad === "string" ? it.cantidad : "";
+      return { nombre, cantidad };
+    })
+    .filter((x) => x.nombre.length > 0 || x.cantidad.length > 0);
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+  const url = await absUrl(`/api/treatments/${encodeURIComponent(slug)}`);
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) return { title: "Tratamiento no encontrado | Impulso" };
+    const t = (await r.json()) as ApiTreatment;
+    return {
+      title: `${t.titulo} | Impulso`,
+      description: String(t.descripcion ?? "").slice(0, 150),
+    };
+  } catch {
+    return { title: "Tratamientos | Impulso" };
+  }
+}
+
+export default async function TratamientoPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+  const url = await absUrl(`/api/treatments/${encodeURIComponent(slug)}`);
+  const res = await fetch(url, { cache: "no-store" });
+
+  if (res.status === 404 || !res.ok) {
     return (
       <section className="bg-stone-50 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-4">
@@ -71,8 +71,14 @@ export default async function TratamientoPage(
           </Link>
         </div>
       </section>
-    )
+    );
   }
+
+  const data = (await res.json()) as ApiTreatment;
+
+  const incluye = normalizeIncluye(data.incluye);
+  const imgSrc: string | StaticImageData =
+    typeof data.img === "string" && data.img.trim() !== "" ? data.img : PresoterapiaImg;
 
   return (
     <section className="bg-stone-50 py-16 px-4">
@@ -80,8 +86,8 @@ export default async function TratamientoPage(
         {/* Imagen */}
         <div className="relative aspect-square bg-stone-100 rounded-lg overflow-hidden">
           <Image
-            src={tratamiento.img}
-            alt={tratamiento.titulo}
+            src={imgSrc}
+            alt={data.alt ?? data.titulo}
             fill
             className="object-contain p-6 drop-shadow-[2px_2px_5px_rgba(0,0,0,0.1)]"
           />
@@ -89,32 +95,28 @@ export default async function TratamientoPage(
 
         {/* Info */}
         <div className="flex flex-col gap-3">
-          <h1 className="text-2xl font-semibold text-stone-800">
-            {tratamiento.titulo}
-          </h1>
+          <h1 className="text-2xl font-semibold text-stone-800">{data.titulo}</h1>
 
-          <p className="text-stone-600">
-            {tratamiento.descripcion}
-          </p>
+          <p className="text-stone-600">{data.descripcion}</p>
 
-          {/* Incluye (lista tipo composición) */}
-          {tratamiento.incluye?.length > 0 && (
+          {/* Incluye */}
+          {incluye.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-stone-700 mt-3 mb-1.5">Incluye</h2>
               <ul className="list-disc list-inside text-sm text-stone-600 space-y-1 mt-1">
-                {tratamiento.incluye.map((item, idx) => (
+                {incluye.map((it, idx) => (
                   <li key={idx}>
-                    <span className="font-medium">{item.nombre}</span> — {item.cantidad}
+                    <span className="font-medium">{it.nombre}</span> — {it.cantidad}
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* Precio desde */}
-          {typeof tratamiento.precioDesde === "number" && (
+          {/* Precio desde (si algún día lo añades a la API) */}
+          {typeof data.precioDesde === "number" && !Number.isNaN(data.precioDesde) && (
             <p className="text-lg text-emerald-700 mt-3">
-              Desde {tratamiento.precioDesde.toFixed(2)} €
+              Desde {data.precioDesde.toFixed(2)} €
             </p>
           )}
 
@@ -124,5 +126,5 @@ export default async function TratamientoPage(
         </div>
       </div>
     </section>
-  )
+  );
 }
