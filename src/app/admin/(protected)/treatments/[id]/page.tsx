@@ -38,9 +38,9 @@ type RawComposition = {
 export default async function EditTreatmentPage({
   params,
 }: {
-  params: Params; // 👈 ya no es Promise
+  params: Promise<Params>; // 👈 params como Promise
 }) {
-  const { id } = params;
+  const { id } = await params; // 👈 desestructurar con await
   if (!id) notFound();
 
   const isNew = id === 'new';
