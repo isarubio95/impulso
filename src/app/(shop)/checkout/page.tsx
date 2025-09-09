@@ -2,13 +2,14 @@
 import { prisma } from '@/lib/db'
 import { requireUser } from '@/lib/auth'
 import CheckoutClient from './ui/CheckoutClient'
+import type { Prisma } from '@prisma/client'
 
 export const runtime = 'nodejs'
 
 // Convierte tu Decimal `price` a céntimos
-function unitCentsOf(p: any): number {
-  if (!p) return 0
-  return Math.round(Number(p.price ?? 0) * 100)
+function unitCentsOf(p: { price: Prisma.Decimal | number | null }): number {
+  if (!p || p.price == null) return 0
+  return Math.round(Number(p.price) * 100)
 }
 
 export default async function CheckoutPage() {
@@ -49,7 +50,6 @@ export default async function CheckoutPage() {
   const defaultAddressId =
     addresses.find(a => a.isDefault)?.id ?? addresses[0]?.id ?? ''
 
-  // ✅ NO pasamos `cart` al cliente (evita Decimal/Date). Enviamos solo primitivos.
   return (
     <CheckoutClient
       addresses={addresses}

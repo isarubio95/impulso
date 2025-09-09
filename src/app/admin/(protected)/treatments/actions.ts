@@ -14,7 +14,6 @@ import { constants as fsConstants } from 'fs';
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB
 
 // ===== Validación =====
-// (Obligatorios según tu modelo)
 const TreatmentSchema = z.object({
   id: z.string().optional(),
   slug: z.string().optional(),
@@ -23,7 +22,7 @@ const TreatmentSchema = z.object({
   longDesc: z.string().min(1),
   imageUrl: z.string().min(1),
   imageAlt: z.string().min(1),
-  composition: z.string().optional(), // llega como JSON string; se parsea a Json
+  composition: z.string().optional(), // JSON string; se parsea a Json
   price: z.union([z.string(), z.number()]).optional(),
   isActive: z.coerce.boolean().optional(),
   promoted: z.coerce.boolean().optional(),
@@ -57,6 +56,7 @@ function safeBaseFromOriginal(file: File): string {
 async function ensureUniqueFilename(dir: string, base: string, ext: string): Promise<string> {
   let name = `${base}.${ext}`;
   let i = 2;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await access(path.join(dir, name), fsConstants.F_OK);
@@ -111,7 +111,6 @@ async function deleteImageByUrl(url?: string | null) {
 }
 
 // ===== composition =====
-// Guarda como array de { nombre, cantidad } en JSON (compatible con Json?)
 const IngredientOutSchema = z.object({
   nombre: z.string().min(1),
   cantidad: z.string().optional().default(''),
@@ -119,33 +118,48 @@ const IngredientOutSchema = z.object({
 const CompositionOutArraySchema = z.array(IngredientOutSchema);
 
 type RawComposition = {
-  nombre?: string; name?: string; ingrediente?: string;
-  cantidad?: string; amount?: string;
+  nombre?: unknown; name?: unknown; ingrediente?: unknown;
+  cantidad?: unknown; amount?: unknown;
 };
+
+function isObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null;
+}
+function toStr(v: unknown): string {
+  return typeof v === 'string' ? v : v == null ? '' : String(v);
+}
 
 function parseCompositionFromString(s?: string) {
   if (s === undefined) return undefined; // update: no tocar
   const t = s.trim();
   if (t === '') return [];
   let parsed: unknown;
-  try { parsed = JSON.parse(t); }
-  catch { throw new Error('composition no es JSON válido'); }
-  const candidate =
-    Array.isArray(parsed)
-      ? parsed
-      : Array.isArray((parsed as any)?.ingredients)
-      ? (parsed as any).ingredients
-      : Array.isArray((parsed as any)?.ingredientes)
-      ? (parsed as any).ingredientes
-      : Array.isArray((parsed as any)?.composicion)
-      ? (parsed as any).composicion
-      : [];
-  const mapped = (candidate as RawComposition[])
-    .map((x) => ({
-      nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
-      cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
-    }))
+  try {
+    parsed = JSON.parse(t);
+  } catch {
+    throw new Error('composition no es JSON válido');
+  }
+
+  let candidate: unknown[] = [];
+  if (Array.isArray(parsed)) {
+    candidate = parsed;
+  } else if (isObject(parsed)) {
+    const arr =
+      Array.isArray(parsed.ingredients) ? parsed.ingredients :
+      Array.isArray(parsed.ingredientes) ? parsed.ingredientes :
+      Array.isArray(parsed.composicion) ? parsed.composicion : [];
+    candidate = arr as unknown[];
+  }
+
+  const mapped = candidate
+    .map((x): { nombre: string; cantidad?: string } => {
+      if (!isObject(x)) return { nombre: '' };
+      const nombre = toStr(x.nombre ?? x.name ?? x.ingrediente).trim();
+      const cantidad = toStr(x.cantidad ?? x.amount).trim();
+      return { nombre, cantidad };
+    })
     .filter((x) => x.nombre !== '');
+
   return CompositionOutArraySchema.parse(mapped);
 }
 
@@ -154,6 +168,7 @@ async function ensureUniqueSlug(base: string, ignoreSlug?: string): Promise<stri
   let candidate = slugify(base);
   if (!candidate) candidate = 'tratamiento';
   let i = 2;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const exists = await prisma.treatment.findUnique({ where: { slug: candidate } });
     if (!exists || (ignoreSlug && exists.slug === ignoreSlug)) return candidate;
@@ -194,11 +209,13 @@ function pickFields(fd: FormData) {
 }
 
 /** Toggle `promoted` con límite 4 */
-export async function toggleTreatmentPromoted(formData: FormData) {
+export async function toggleTreatmentPromoted(
+  formData: FormData
+): Promise<{ ok: true; slug: string } | { ok: false; error: string }> {
   await requireAdmin();
   const id = formData.get('id') as string;
   const nextValue = formData.get('nextValue') === 'true';
-  if (!id) return { ok: false as const, error: 'Falta el id del tratamiento.' };
+  if (!id) return { ok: false, error: 'Falta el id del tratamiento.' };
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -228,8 +245,9 @@ export async function toggleTreatmentPromoted(formData: FormData) {
     revalidatePath('/admin/treatments');
     revalidatePath('/');
     return result;
-  } catch (e: any) {
-    return { ok: false, error: e?.message ?? 'Error al actualizar promoción.' };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Error al actualizar promoción.';
+    return { ok: false, error: msg };
   }
 }
 
@@ -251,7 +269,6 @@ export async function upsertTreatment(formData: FormData): Promise<
 
     if (!isUpdate) {
       // ---------- CREATE ----------
-      // Asegurar imageUrl por defecto si no mandas campo
       const createInput = {
         ...fields,
         imageUrl: fields.imageUrl ?? DEFAULT_IMAGE_URL,
@@ -365,7 +382,7 @@ export async function upsertTreatment(formData: FormData): Promise<
       revalidateTreatmentPages(updated.slug, current.slug);
       return { ok: true, id: updated.id };
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('upsertTreatment error:', err);
     return { ok: false, error: 'unexpected_error' };
   }
@@ -385,7 +402,7 @@ export async function deleteTreatment(
 
     revalidateTreatmentPages(current?.slug ?? '');
     return { ok: true };
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('deleteTreatment error:', err);
     return { ok: false, error: 'unexpected_error' };
   }

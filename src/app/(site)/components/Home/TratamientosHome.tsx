@@ -17,7 +17,7 @@ type ApiTreatment = {
 }
 
 const colorCycle = ['green', 'pink', 'red', 'green'] as const
-type Color = typeof colorCycle[number]
+type Color = (typeof colorCycle)[number]
 
 export default function TratamientosHome() {
   const [items, setItems] = useState<ApiTreatment[] | null>(null)
@@ -31,9 +31,10 @@ export default function TratamientosHome() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data: ApiTreatment[] = await res.json()
         if (!cancelled) setItems(data)
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
         if (!cancelled) setError('No se pudieron cargar los tratamientos.')
-        console.error(e)
+        console.error('Error cargando tratamientos:', msg)
       }
     })()
     return () => {
@@ -52,7 +53,6 @@ export default function TratamientosHome() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl w-full">
         {items === null && !error && (
           <>
-            {/* Skeletons sencillos */}
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="h-40 rounded-xl bg-stone-100 animate-pulse" />
             ))}
