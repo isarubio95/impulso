@@ -26,7 +26,7 @@ export default function TarjetaTratamiento({
       <div
         className={[
           // card
-          'relative flex h-full rounded-2xl shadow-sm hover:shadow-md',
+          'relative w-full flex h-full rounded-2xl shadow-sm hover:shadow-md',
           // fondo por color
           bgClass,
           // padding y transición (sin transition-all)

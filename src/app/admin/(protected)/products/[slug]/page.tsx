@@ -2,11 +2,10 @@ export const runtime = 'nodejs';
 
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
-import { createProduct, updateProduct, deleteProduct } from '../actions';
-import ConfirmSubmit from '../ConfirmSubmit';
+import { createProduct, updateProduct } from '../actions';
 import CompositionEditor from '../CompositionEditor';
 import NameSlugFields from '../NameSlugFields';
-import ImageInput from '../ImageInput';
+import FileDropzone from '../../FileDropzone';
 
 type Params = { slug: string };
 
@@ -38,7 +37,7 @@ export default async function EditProductPage({
     );
   }
 
-  // --- Normalización para que CompositionEditor vea siempre { nombre, cantidad }[] ---
+  // --- Normalización para CompositionEditor ---
   type RawComposition = {
     nombre?: string;
     name?: string;
@@ -49,10 +48,12 @@ export default async function EditProductPage({
 
   const compInitial: Array<{ nombre: string; cantidad?: string }> =
     Array.isArray((product as { composition?: RawComposition[] })?.composition)
-      ? (product!.composition as RawComposition[]).map((x) => ({
-          nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
-          cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
-        })).filter((x) => x.nombre !== '')
+      ? (product!.composition as RawComposition[])
+          .map((x) => ({
+            nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
+            cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
+          }))
+          .filter((x) => x.nombre !== '')
       : [];
 
   const currentImageUrl = isNew ? '' : (product!.imageUrl ?? '');
@@ -118,14 +119,31 @@ export default async function EditProductPage({
             <CompositionEditor initial={[]} />
           </label>
 
-          <label className="block">
+          {/* Imagen nueva + preview (no anidar en <label> para evitar doble open) */}
+          <div className="block">
             <span className="block text-sm mb-1">Imagen</span>
-            <ImageInput
-              name="image"
-              maxMB={5}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+
+            {/* Preview inicial */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              id="productPreview"
+              src="/assets/img/product.png"
+              alt="Previsualización"
+              className="w-20 h-20 object-contain border rounded-md bg-white mb-2"
             />
-          </label>
+
+            <FileDropzone
+              name="image"
+              accept="image/*"
+              maxMB={5}
+              className="w-full"
+              previewImgId="productPreview"
+            />
+
+            <p className="text-xs text-stone-500 mt-1">
+              Arrastra y suelta o haz clic. Máx. 5MB.
+            </p>
+          </div>
 
           <button
             type="submit"
@@ -187,41 +205,46 @@ export default async function EditProductPage({
             />
           </label>
 
-          {/* Composición con datos precargados (normalizados) */}
+          {/* Composición con datos precargados */}
           <label className="block">
             <span className="block text-sm mb-2">Composición (ingredientes)</span>
             <CompositionEditor initial={compInitial} />
           </label>
 
-          {/* Imagen: ruta actual (readonly) + previsualización + input para nueva imagen */}
-          <label className="block">
-            <span className="block text-sm mb-1">Imagen</span>
-
-            {/* Ruta actual (readonly) para que se vea y viaje en el form (si no subes nueva, se mantiene) */}
-            <input
-              name="imageUrl"
-              defaultValue={currentImageUrl}
-              readOnly
-              className="w-full rounded-md border px-3 py-2 text-sm bg-stone-50"
-              title="Ruta de la imagen actual"
+          {/* Imagen: ruta actual + preview */}
+          <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+            <label className="block">
+              <span className="block text-sm mb-1">Imagen (ruta actual)</span>
+              <input
+                name="imageUrl"
+                defaultValue={currentImageUrl}
+                readOnly
+                className="w-full rounded-md border px-3 py-2 text-sm bg-stone-50"
+                title="Ruta de la imagen actual"
+              />
+            </label>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              id="productPreview" // 👈 FileDropzone actualizará esta preview
+              src={currentImageUrl || '/assets/img/product.png'}
+              alt={product!.name}
+              className="w-16 h-16 object-contain border rounded-md bg-white justify-self-end"
             />
+          </div>
 
-            {/* Previsualización de la imagen actual */}
-            <div className="mt-2 flex items-center gap-3">
-              <img
-                src={currentImageUrl || '/assets/img/product.png'}
-                alt="Imagen actual"
-                className="w-20 h-20 object-contain border rounded-md bg-white"
-              />
-
-              {/* Selector para nueva imagen (con validación de 5MB) */}
-              <ImageInput
-                name="image"
-                maxMB={5}
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </div>
-          </label>
+          <div className="block">
+            <span className="block text-sm mb-1">Subir nueva imagen</span>
+            <FileDropzone
+              name="image"
+              accept="image/*"
+              maxMB={5}
+              className="w-full"
+              previewImgId="productPreview"
+            />
+            <p className="text-xs text-stone-500 mt-1">
+              Arrastra y suelta o haz clic. Máx. 5MB (se valida también al guardar).
+            </p>
+          </div>
 
           <div className="flex items-center gap-3 mt-6">
             <button
@@ -229,15 +252,7 @@ export default async function EditProductPage({
               className="px-4 py-2 rounded-md bg-rose-600 text-white text-sm hover:bg-rose-700 cursor-pointer"
             >
               Guardar
-            </button>
-
-            <ConfirmSubmit
-              message={`¿Eliminar "${product!.name}"?`}
-              className="px-4 py-2 rounded-md border border-rose-300 text-rose-700 hover:bg-rose-50 text-sm cursor-pointer"
-              formAction={deleteProduct.bind(null, product!.slug)}
-            >
-              Borrar
-            </ConfirmSubmit>
+            </button>            
           </div>
         </form>
       )}

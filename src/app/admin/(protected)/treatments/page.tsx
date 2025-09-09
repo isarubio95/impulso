@@ -1,8 +1,36 @@
-// src/app/admin/(protected)/treatments/page.tsx
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
+import ConfirmSubmit from '../products/ConfirmSubmit'
+import { deleteTreatment, toggleTreatmentPromoted } from './actions'
+import PromoteCheckbox from './PromoteCheckbox'
 
 export const runtime = 'nodejs'
+
+// --- Wrapper de server action que devuelve void ---
+async function deleteAction(formData: FormData): Promise<void> {
+  'use server'
+  const res = await deleteTreatment(formData)
+  if (!res.ok) throw new Error(res.error)
+}
+
+function StatusBadge({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`px-2 py-0.5 rounded-md text-xs font-medium ${
+        active ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-600'
+      }`}
+    >
+      {active ? 'Activo' : 'Inactivo'}
+    </span>
+  )
+}
+
+function fmt(dt: Date) {
+  return new Date(dt).toLocaleString('es-ES', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
 
 export default async function TreatmentsAdminPage({
   searchParams,
@@ -27,14 +55,24 @@ export default async function TreatmentsAdminPage({
   const items = await prisma.treatment.findMany({
     where,
     orderBy: { updatedAt: 'desc' },
-    select: { id: true, slug: true, title: true, isActive: true, updatedAt: true },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      isActive: true,
+      promoted: true, // 👈 añadimos promoted
+      updatedAt: true,
+    },
   })
 
   return (
     <section className="max-w-6xl mx-auto space-y-6 text-stone-700 px-4 py-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tratamientos</h1>
-        <Link href="/admin/treatments/new" className="px-3 py-2 rounded-md bg-emerald-600 text-white text-sm">
+        <Link
+          href="/admin/treatments/new"
+          className="inline-flex px-3 py-2 rounded-md bg-emerald-600 text-white text-sm hover:bg-emerald-700"
+        >
           Nuevo tratamiento
         </Link>
       </div>
@@ -47,37 +85,65 @@ export default async function TreatmentsAdminPage({
           placeholder="Buscar por título, slug…"
           className="border rounded-md px-3 py-2 text-sm"
         />
-        <button className="px-3 py-2 rounded-md border text-sm">Buscar</button>
+        <button className="px-3 py-2 rounded-md border text-sm hover:bg-stone-50">
+          Buscar
+        </button>
       </form>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="py-2 pr-3">Título</th>
-              <th className="py-2 pr-3">Slug</th>
-              <th className="py-2 pr-3">Estado</th>
-              <th className="py-2 pr-3">Actualizado</th>
-              <th className="py-2 pr-3">Acciones</th>
+      <div className="overflow-x-auto border rounded-md bg-white">
+        <table className="min-w-full text-sm">
+          <thead className="bg-stone-100 border-b">
+            <tr>
+              <th className="text-left p-3">Título</th>
+              <th className="text-left p-3">Slug</th>
+              <th className="text-left p-3">Estado</th>
+              <th className="text-left p-3">Promocionado</th>{/* 👈 nueva columna */}
+              <th className="text-left p-3">Actualizado</th>
+              <th className="text-right p-3">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {items.map((t) => (
-              <tr key={t.id} className="border-b">
-                <td className="py-2 pr-3">{t.title}</td>
-                <td className="py-2 pr-3 text-stone-600">{t.slug}</td>
-                <td className="py-2 pr-3">{t.isActive ? 'Activo' : 'Inactivo'}</td>
-                <td className="py-2 pr-3 text-stone-500">{new Date(t.updatedAt).toLocaleString()}</td>
-                <td className="py-2 pr-3">
-                  <Link className="text-sky-700 hover:underline" href={`/admin/treatments/${t.id}`}>
+              <tr key={t.id} className="border-b align-middle">
+                <td className="p-3 font-medium">{t.title}</td>
+                <td className="p-3 text-stone-600">{t.slug}</td>
+                <td className="p-3">
+                  <StatusBadge active={t.isActive} />
+                </td>
+
+                {/* Checkbox que llama a la server action al cambiar */}
+                <td className="p-3">
+                  <PromoteCheckbox
+                    id={t.id}
+                    defaultChecked={t.promoted}
+                    action={toggleTreatmentPromoted}
+                  />
+                </td>
+
+                <td className="p-3 text-stone-500">{fmt(t.updatedAt)}</td>
+                <td className="p-3 text-right space-x-2">
+                  <Link
+                    className="inline-flex px-3 py-2 rounded-md border text-sm hover:bg-stone-50"
+                    href={`/admin/treatments/${t.id}`}
+                  >
                     Editar
                   </Link>
+
+                  <form action={deleteAction} className="inline">
+                    <input type="hidden" name="id" value={t.id} />
+                    <ConfirmSubmit
+                      message={`¿Eliminar "${t.title}"?`}
+                      className="px-3 py-2 rounded-md border border-rose-300 text-rose-700 hover:bg-rose-50"
+                    >
+                      Borrar
+                    </ConfirmSubmit>
+                  </form>
                 </td>
               </tr>
             ))}
             {items.length === 0 && (
               <tr>
-                <td className="py-8 text-center text-stone-500" colSpan={5}>
+                <td colSpan={6} className="p-6 text-center text-stone-500">
                   No hay tratamientos todavía.
                 </td>
               </tr>
@@ -85,6 +151,7 @@ export default async function TreatmentsAdminPage({
           </tbody>
         </table>
       </div>
+      <p className="text-xs text-stone-500">Máximo 4 tratamientos promocionados.</p>
     </section>
   )
 }

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { upsertPromotion, deletePromotion } from '../actions';
+import FileDropzone from '../../FileDropzone';
 
 // --- Helpers ---
 function isPrismaDecimal(v: unknown): v is Prisma.Decimal {
@@ -144,36 +145,39 @@ export default async function PromotionEditPage({
           </label>
         </div>
 
-        {/* Imagen: ruta actual + preview + input de archivo */}
+        {/* Imagen: ruta actual + preview */}
         <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
           <label className="block">
             <span className="block text-sm mb-1">Imagen (ruta actual)</span>
             <input
               name="imageUrl"
               defaultValue={defImageUrl}
-              readOnly
               className="w-full rounded-md border px-3 py-2 text-sm bg-stone-50"
             />
           </label>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            id="promoPreview" // 👈 FileDropzone actualizará esta preview
             src={defImageUrl}
             alt={defImageAlt}
             className="w-16 h-16 object-contain border rounded-md bg-white justify-self-end"
           />
         </div>
 
-        <label className="block">
+        {/* Subir nueva imagen con FileDropzone (fuera de <label> para evitar doble open) */}
+        <div className="block">
           <span className="block text-sm mb-1">Subir nueva imagen</span>
-          <input
+          <FileDropzone
             name="image"
-            type="file"
             accept="image/*"
-            className="w-full rounded-md border px-3 py-2 text-sm"
+            maxMB={5}
+            className="w-full"
+            previewImgId="promoPreview"
           />
           <p className="text-xs text-stone-500 mt-1">
-            Máx. 5MB (se valida al guardar).
+            Arrastra y suelta o haz clic. Máx. 5MB (se valida también al guardar).
           </p>
-        </label>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           <label className="block">

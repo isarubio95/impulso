@@ -3,23 +3,212 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-/* ---------- Citas (entrevistas) ---------- */
+/**
+ * ---------- Usuarios ----------
+ */
+enum UserRole {
+  user
+  admin
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      UserRole @default(user)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+
+  // 👇 back-relations añadidas
+  addresses Address[] // Address.user
+  orders    Order[] // Order.user
+  cart      Cart? // Cart.user (1:1 si activas @@unique en Cart)
+  // Si quisieras, también puedes añadir:
+  // cartItems CartItem[]   // si necesitas navegar a items del carrito del usuario
+}
+
+/**
+ * ---------- Tratamientos ----------
+ */
+model Treatment {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  desc        String
+  longDesc    String
+  imageUrl    String
+  imageAlt    String
+  composition Json?
+  price       Decimal?
+  isActive    Boolean  @default(true)
+  promoted    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/**
+ * ---------- Productos ----------
+ */
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  price       Decimal  @db.Decimal(10, 2)
+  desc        String
+  longDesc    String?  @db.Text
+  imageUrl    String?
+  composition Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  promotions Promotion[] // ya lo tenías
+
+  // 👇 back-relations añadidas
+  orderItems OrderItem[] // OrderItem.product
+  cartItems  CartItem[] // CartItem.product
+}
+
+/**
+ * ---------- Promociones ----------
+ */
+model Promotion {
+  id    String @id @default(cuid())
+  title String
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  blurb     String?
+  priceNew  Decimal?  @db.Decimal(10, 2)
+  priceOld  Decimal?  @db.Decimal(10, 2)
+  imageUrl  String?
+  imageAlt  String?
+  ctaUrl    String?
+  startsAt  DateTime?
+  endsAt    DateTime?
+  isActive  Boolean   @default(true)
+  priority  Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([isActive, startsAt, endsAt])
+}
+
+/**
+ * ---------- Direcciones ----------
+ */
+model Address {
+  id         String   @id @default(cuid())
+  userId     String?
+  fullName   String
+  phone      String?
+  line1      String
+  line2      String?
+  city       String
+  province   String
+  postalCode String
+  country    String   @default("ES")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User?   @relation(fields: [userId], references: [id]) // 👈 opuesto: User.addresses
+  orders Order[]
+}
+
+/**
+ * ---------- Pedidos ----------
+ */
+enum OrderStatus {
+  PENDING
+  REQUIRES_ACTION
+  PAID
+  CANCELED
+  FAILED
+  REFUNDED
+  FULFILLED
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String?
+  addressId     String
+  status        OrderStatus @default(PENDING)
+  subtotalCents Int
+  shippingCents Int
+  taxCents      Int
+  totalCents    Int
+  currency      String      @default("EUR")
+  stripePI      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  address Address     @relation(fields: [addressId], references: [id])
+  user    User?       @relation(fields: [userId], references: [id]) // 👈 opuesto: User.orders
+  items   OrderItem[]
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  productId  String
+  name       String
+  quantity   Int
+  unitCents  Int
+  totalCents Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id]) // 👈 opuesto: Product.orderItems
+}
+
+/**
+ * ---------- Carrito ----------
+ */
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user User? @relation(fields: [userId], references: [id]) // 👈 opuesto: User.cart
+
+  @@unique([userId])
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int    @default(1)
+
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id]) // 👈 opuesto: Product.cartItems
+}
+
+/**
+ * ---------- Citas (entrevistas) ----------
+ */
 model Appointment {
-  id           String   @id @default(cuid())
-  fullName     String
-  phone        String
-  email        String?
-  notes        String?
-  startsAt     DateTime
-  endsAt       DateTime
-  status       AppointmentStatus @default(pending)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id        String            @id @default(cuid())
+  fullName  String
+  phone     String
+  email     String?
+  notes     String?
+  startsAt  DateTime
+  endsAt    DateTime
+  status    AppointmentStatus @default(pending)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   @@index([startsAt])
 }
@@ -30,80 +219,9 @@ enum AppointmentStatus {
   cancelled
 }
 
-/* ---------- Productos ---------- */
-model Product {
-  id         String   @id @default(cuid())
-  slug       String   @unique
-  name       String
-  price      Decimal  @db.Decimal(10,2)
-  desc       String
-  longDesc   String?  @db.Text
-  imageUrl   String?
-  composition Json?   // ej: [{ nombre, cantidad }, ...]
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  promotions Promotion[]   // promos asociadas (opcional)
-}
-
-/* ---------- Promociones ---------- */
-model Promotion {
-  id         String   @id @default(cuid())
-  title      String
-  // Relación  con producto:
-  productId  String?
-  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  blurb      String?         // descripción corta
-  priceNew   Decimal? @db.Decimal(10,2)
-  priceOld   Decimal? @db.Decimal(10,2)
-  imageUrl   String?  
-  imageAlt   String?
-  ctaUrl     String?         // ej: "/tienda/crema-hidratante" si no ligas productId
-  startsAt   DateTime?
-  endsAt     DateTime?
-  isActive   Boolean  @default(true)
-  priority   Int      @default(0)  // para ordenar en el carrusel
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([isActive, startsAt, endsAt])
-}
-
-/* ---------- Usuarios ---------- */
-enum UserRole {
-  user
-  admin
-}
-
-model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  password  String    // hash bcrypt
-  role      UserRole  @default(user)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  sessions  Session[]
-}
-
-/* ---------- Tratamientos ---------- */
-model Treatment {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  desc        String
-  longDesc    String?  @db.Text
-  imageUrl    String?
-  imageAlt    String?
-  composition Json?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
+/**
+ * ---------- Sesiones ----------
+ */
 model Session {
   id        String   @id @default(cuid())
   userId    String
@@ -114,5 +232,3 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
 }
-
-

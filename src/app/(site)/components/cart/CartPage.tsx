@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { useCart } from '@/app/(site)/components/cart/CartProvider';
 import { formatEUR } from '@/lib/cart/money';
-import { persistCartAndGoCheckout } from '../components/cart/actions'
+import { persistCartAndGoCheckout } from './actions'
 
 export default function CartPage() {
   const { state, subtotal, dispatch, ready } = useCart();
@@ -22,10 +22,13 @@ export default function CartPage() {
     startTransition(async () => {
       try {
         await persistCartAndGoCheckout(payload)
-        // El server hará redirect('/checkout')
-      } catch (e) {
-        console.error(e)
+        // No llega aquí si el server hizo redirect correctamente,
+        // Next hará la navegación a /checkout.
+      } catch (e: any) {
+        // Si requireUser redirige internamente a login, tampoco entra aquí.
+        // Este catch atrapa otros errores (red de dev, etc.)
         alert('No se pudo iniciar el checkout. Inténtalo de nuevo.')
+        console.error(e)
       }
     })
   }
@@ -42,13 +45,25 @@ export default function CartPage() {
               <p className="text-sm">{formatEUR(i.price)}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button className="px-2 py-1 border rounded"
-                onClick={() => dispatch({ type: 'DEC', payload: { id: i.id, variant: i.variant } })}>−</button>
+              <button
+                className="px-2 py-1 border rounded"
+                onClick={() => dispatch({ type: 'DEC', payload: { id: i.id, variant: i.variant } })}
+              >
+                −
+              </button>
               <span>{i.qty}</span>
-              <button className="px-2 py-1 border rounded"
-                onClick={() => dispatch({ type: 'INC', payload: { id: i.id, variant: i.variant } })}>+</button>
-              <button className="px-3 py-1 border rounded text-rose-600"
-                onClick={() => dispatch({ type: 'REMOVE', payload: { id: i.id, variant: i.variant } })}>Quitar</button>
+              <button
+                className="px-2 py-1 border rounded"
+                onClick={() => dispatch({ type: 'INC', payload: { id: i.id, variant: i.variant } })}
+              >
+                +
+              </button>
+              <button
+                className="px-3 py-1 border rounded text-rose-600"
+                onClick={() => dispatch({ type: 'REMOVE', payload: { id: i.id, variant: i.variant } })}
+              >
+                Quitar
+              </button>
             </div>
           </li>
         ))}

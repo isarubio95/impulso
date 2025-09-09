@@ -23,7 +23,7 @@ const PromotionFormSchema = z.object({
   blurb: z.string().optional(),
   priceNew: zNumOpt,
   priceOld: zNumOpt,
-  imageUrl: z.string().optional(),     // ruta actual si no sube nueva
+  imageUrl: z.string().optional(),     // ruta deseada si no sube nueva o para forzar destino
   imageAlt: z.string().optional(),
   ctaUrl: z.string().optional(),
   startsAt: z.string().optional(),     // <input type="datetime-local">
@@ -36,8 +36,9 @@ const PromotionFormSchema = z.object({
 });
 
 // ===== Ficheros =====
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'assets', 'img');
 const PUBLIC_PREFIX = '/assets/img';
+const PUBLIC_ROOT = path.join(process.cwd(), 'public');
+const UPLOAD_DIR = path.join(PUBLIC_ROOT, 'assets', 'img'); // por defecto
 const DEFAULT_IMAGE_URL = `${PUBLIC_PREFIX}/product.png`;
 
 function extFrom(file: File) {
@@ -52,26 +53,80 @@ function extFrom(file: File) {
   };
   return map[file.type] ?? 'png';
 }
-async function ensureUniqueFilename(base: string, ext: string) {
-  let name = `${base}.${ext}`, i = 2;
+
+function baseFromFilename(name?: string) {
+  const b = path.parse(name ?? '').name;
+  return (b || 'image').replace(/[^a-z0-9-_.]/gi, '').toLowerCase();
+}
+
+async function ensureUniqueFilename(dirAbs: string, base: string, ext: string) {
+  let filename = `${base}.${ext}`, i = 2;
   while (true) {
-    try { await access(path.join(UPLOAD_DIR, name), fsConstants.F_OK); name = `${base}-${i++}.${ext}`; }
-    catch { return name; }
+    const candidate = path.join(dirAbs, filename);
+    try {
+      await access(candidate, fsConstants.F_OK);
+      filename = `${base}-${i++}.${ext}`;
+    } catch {
+      return filename;
+    }
   }
 }
-async function saveImage(file: File, base: string) {
+
+/**
+ * Guarda el archivo EXACTAMENTE en la URL pública indicada si no existe aún.
+ * Soporta subdirectorios dentro de /assets/img (ej: /assets/img/promos/home-hero.png)
+ * Si ya existe, devuelve null para que el caller use un nombre único alternativo.
+ */
+async function saveImageAtUrl(file: File, targetPublicUrl: string) {
+  if (!targetPublicUrl.startsWith(PUBLIC_PREFIX)) {
+    throw new Error('Ruta de imagen fuera de /assets/img');
+  }
+
+  // targetPublicUrl -> ruta relativa dentro de /public
+  const rel = targetPublicUrl.replace(/^\//, ''); // assets/img/...
+  const parsed = path.parse(rel);
+  const dirAbs = path.join(PUBLIC_ROOT, parsed.dir); // /public/assets/img[/sub]
+  const ext = (parsed.ext.replace(/^\./, '') || extFrom(file)).toLowerCase();
+  const cleanName = (parsed.name || 'image').replace(/[^a-z0-9-_.]/gi, '').toLowerCase();
+  const filename = `${cleanName}.${ext}`;
+  const absPath = path.join(dirAbs, filename);
+
+  await mkdir(dirAbs, { recursive: true });
+
+  try {
+    await access(absPath, fsConstants.F_OK); // ya existe
+    return null as string | null;
+  } catch {
+    await writeFile(absPath, Buffer.from(await file.arrayBuffer()));
+    return `/${path.join(parsed.dir, filename).replace(/\\/g, '/')}`;
+  }
+}
+
+/**
+ * Guarda el archivo usando su nombre REAL como base
+ * (p. ej. banner_octubre.png -> /assets/img/banner_octubre.png),
+ * evitando colisiones con sufijos -2, -3, ...
+ * Soporta solo el directorio base /assets/img (sin subcarpetas).
+ */
+async function saveImageWithOriginalName(file: File) {
   if (!file || file.size === 0) return '';
   await mkdir(UPLOAD_DIR, { recursive: true });
+
+  const base = baseFromFilename(file.name);
   const ext = extFrom(file);
-  const safe = base.replace(/[^a-z0-9-]/gi, '').toLowerCase() || 'image';
-  const filename = await ensureUniqueFilename(safe, ext);
+  const filename = await ensureUniqueFilename(UPLOAD_DIR, base, ext);
+
   await writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(await file.arrayBuffer()));
   return `${PUBLIC_PREFIX}/${filename}`;
 }
+
 async function deleteByUrl(url?: string | null) {
   if (!url || !url.startsWith(PUBLIC_PREFIX) || url === DEFAULT_IMAGE_URL) return;
-  const abs = path.join(process.cwd(), 'public', url.replace(/^\//, ''));
-  try { await stat(abs); await unlink(abs); } catch {}
+  const abs = path.join(PUBLIC_ROOT, url.replace(/^\//, ''));
+  try {
+    await stat(abs);
+    await unlink(abs);
+  } catch {}
 }
 
 // Date helper
@@ -116,8 +171,22 @@ export async function upsertPromotion(formData: FormData) {
     baseProduct?.imageUrl ||
     DEFAULT_IMAGE_URL;
 
+  // === NUEVA LÓGICA DE GUARDADO ===
   if (file && file.size > 0) {
-    imageUrl = await saveImage(file, `promo-${data.productId}`);
+    // 1) Si el usuario ha indicado una ruta en imageUrl, intentamos guardar EXACTAMENTE ahí si no existe
+    if (data.imageUrl && data.imageUrl.startsWith(PUBLIC_PREFIX)) {
+      const savedAtRequested = await saveImageAtUrl(file, data.imageUrl);
+      if (savedAtRequested) {
+        imageUrl = savedAtRequested;
+      } else {
+        // 2) Si ya existía esa ruta/archivo, guardamos usando el nombre REAL del archivo subido
+        //    en /assets/img, evitando colisiones (-2, -3, ...)
+        imageUrl = await saveImageWithOriginalName(file);
+      }
+    } else {
+      // 3) Sin ruta previa → usamos el nombre REAL del archivo subido
+      imageUrl = await saveImageWithOriginalName(file);
+    }
   }
 
   // fechas -> Date | null
@@ -143,7 +212,7 @@ export async function upsertPromotion(formData: FormData) {
       startsAt,
       endsAt,
       isActive: data.isActive ?? true,
-      priority: data.priority ?? 10, // ⬅️ prioridad por defecto 10
+      priority: data.priority ?? 10, // por defecto 10
     };
 
     await prisma.promotion.create({ data: createData });
@@ -170,7 +239,10 @@ export async function upsertPromotion(formData: FormData) {
       data: updateData,
     });
 
-    if (file && file.size > 0) await deleteByUrl(prevImageUrl);
+    // si hemos subido archivo nuevo y la url previa era distinta, borramos la anterior
+    if (file && file.size > 0 && prevImageUrl && prevImageUrl !== imageUrl) {
+      await deleteByUrl(prevImageUrl);
+    }
   }
 
   revalidatePromos(data.productId);

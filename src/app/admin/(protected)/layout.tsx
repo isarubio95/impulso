@@ -10,8 +10,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen bg-stone-50">
-      <header className="sticky py-6 top-0 z-40 bg-sky-950 text-white border-b">
-        <div className="max-w-6xl mx-auto min-h-screen h-full px-4 pb-16 flex flex-col items-center">
+      <header className="sticky top-0 box-border z-40 h-screen bg-sky-950 text-white border-r">
+        <div className="max-w-6xl py-6 mx-auto min-h-screen h-full px-4 pb-16 flex flex-col items-center">
           <h1 className="text-lg font-semibold pl-2">Panel de administración</h1>
           <nav className="flex flex-col gap-2 justify-center h-full w-full">
             <Link

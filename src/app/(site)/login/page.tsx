@@ -12,9 +12,8 @@ export default async function LoginPage({
   const next = sp?.next ?? '';
 
   return (
-    <section className="min-h-[75vh] bg-stone-50 text-stone-600 flex flex-col gap-6 items-center justify-center px-4">
-      <form action={signIn} className="w-full max-w-sm space-y-4 rounded-lg border bg-white p-6">
-        {/* preserve ?next=… */}
+    <section className="min-h-[75vh] bg-stone-50 text-stone-700 flex flex-col gap-6 items-center justify-center px-4">
+      <form action={signIn} className="w-full shadow max-w-sm space-y-4 rounded-lg ring-1 ring-black/5 bg-white p-6">
         {next && <input type="hidden" name="next" value={next} />}
 
         <h1 className="text-lg mb-6 font-semibold text-center text-stone-800">Iniciar sesión</h1>

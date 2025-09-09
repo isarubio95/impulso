@@ -75,7 +75,11 @@ export default async function PromotionsAdminPage() {
                   <td className="p-3 text-right space-x-2">
                     <Link
                       href={`/admin/promotions/${p.id}`}
-                      className="inline-flex px-3 py-2 rounded-md bg-rose-600 text-white text-sm hover:bg-rose-700"
+                      className={
+                        promo
+                          ? "inline-flex px-3 py-2 rounded-md border text-sm hover:bg-stone-50"
+                          : "inline-flex px-3 py-2 rounded-md bg-rose-600 text-white text-sm hover:bg-rose-700"
+                      }
                     >
                       {promo ? 'Editar' : 'Promocionar'}
                     </Link>
