@@ -1,36 +1,30 @@
 'use client';
 
-import { useTransition } from 'react'
+import { useTransition } from 'react';
 import { useCart } from '@/app/(site)/components/cart/CartProvider';
 import { formatEUR } from '@/lib/cart/money';
-import { persistCartAndGoCheckout } from './actions'
+import { persistCartAndGoCheckout } from './actions';
 
-export default function CartPage() {
+export default function CartPage(): React.ReactElement {
   const { state, subtotal, dispatch, ready } = useCart();
-  const [pending, startTransition] = useTransition()
+  const [pending, startTransition] = useTransition();
 
   if (!ready) return <div className="p-6">Cargando…</div>;
   if (state.items.length === 0) return <div className="p-6">Tu carrito está vacío.</div>;
 
-  const iniciarCheckout = () => {
-    const payload = state.items.map(i => ({
+  function iniciarCheckout(): void {
+    type CheckoutPayload = Parameters<typeof persistCartAndGoCheckout>[0];
+
+    const payload: CheckoutPayload = state.items.map(i => ({
       id: i.id,
       variant: i.variant ?? null,
       qty: i.qty,
-    }))
+    }));
 
-    startTransition(async () => {
-      try {
-        await persistCartAndGoCheckout(payload)
-        // No llega aquí si el server hizo redirect correctamente,
-        // Next hará la navegación a /checkout.
-      } catch (e: any) {
-        // Si requireUser redirige internamente a login, tampoco entra aquí.
-        // Este catch atrapa otros errores (red de dev, etc.)
-        alert('No se pudo iniciar el checkout. Inténtalo de nuevo.')
-        console.error(e)
-      }
-    })
+    // Deja que el redirect de la server action ocurra sin capturarlo
+    startTransition(() => {
+      void persistCartAndGoCheckout(payload);
+    });
   }
 
   return (
@@ -48,13 +42,15 @@ export default function CartPage() {
               <button
                 className="px-2 py-1 border rounded"
                 onClick={() => dispatch({ type: 'DEC', payload: { id: i.id, variant: i.variant } })}
+                aria-label="Disminuir cantidad"
               >
                 −
               </button>
-              <span>{i.qty}</span>
+              <span aria-live="polite">{i.qty}</span>
               <button
                 className="px-2 py-1 border rounded"
                 onClick={() => dispatch({ type: 'INC', payload: { id: i.id, variant: i.variant } })}
+                aria-label="Aumentar cantidad"
               >
                 +
               </button>
