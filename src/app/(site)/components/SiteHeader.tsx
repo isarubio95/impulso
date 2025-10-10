@@ -239,7 +239,7 @@ export default function Header() {
                   href={item.href}
                   className={cn(
                     'text-base font-medium px-3 py-2 rounded-md transition',
-                    pathname === item.href ? 'bg-rose-500 text-white' : 'text-stone-700 hover:bg-rose-200'
+                    pathname === item.href ? 'bg-rose-300 text-white' : 'text-stone-700 hover:bg-rose-200'
                   )}
                   onClick={() => setIsOpen(false)}
                 >

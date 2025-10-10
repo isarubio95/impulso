@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import CTA from '../CTA'
+import CTA from '../components/CTA'
 import presoterapia from '@/assets/img/presoterapia.png'
 import terapeuta from '@/assets/img/terapeuta.png'
 import TarjetaTratamientos from './TarjetaTratamientos'

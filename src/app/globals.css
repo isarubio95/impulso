@@ -37,7 +37,12 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.shadow-soft {
+  box-shadow: 0 0 20px 8px rgba(0, 0, 0, 0.1);
 }

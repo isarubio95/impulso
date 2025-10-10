@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import CTA from '../CTA'
+import CTA from '../components/CTA'
 
 type PromocionesProps = {
   imagen: string
