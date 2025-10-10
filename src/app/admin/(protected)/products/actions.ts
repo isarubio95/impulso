@@ -6,11 +6,9 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth-admin';
 import { Prisma } from '@prisma/client';
 import { slugify } from '@/lib/slug';
-import path from 'path';
-import { writeFile, mkdir, unlink, stat, access } from 'fs/promises';
-import { constants as fsConstants } from 'fs';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// ===== Límite de subida (ajusta si quieres) =====
+// ===== Límite de subida =====
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB
 
 // ===== Validación (sin nulls) =====
@@ -26,65 +24,79 @@ const ProductSchema = z.object({
 });
 const PartialProductSchema = ProductSchema.partial();
 
-// ===== Rutas de imagen =====
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'assets', 'img'); // raíz /img
-const PUBLIC_PREFIX = '/assets/img';
-const DEFAULT_IMAGE_NAME = 'product.png';
-const DEFAULT_IMAGE_URL = `${PUBLIC_PREFIX}/${DEFAULT_IMAGE_NAME}`;
+// ===== Imagen por defecto (local opcional) =====
+const DEFAULT_IMAGE_URL = '/assets/img/product.png';
 
-// ===== Helpers de fichero =====
-function getExtFromFile(file: File): string {
-  const fromName = path.parse(file.name ?? '').ext.replace(/^\./, '').toLowerCase();
-  if (fromName) return fromName;
-  const map: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'image/gif': 'gif',
-    'image/avif': 'avif',
-  };
-  return map[file.type] ?? 'png';
-}
-function safeBaseFromOriginal(file: File): string {
-  const base = path.parse(file.name ?? '').name;
-  const sanitized = slugify(base);
-  return sanitized || 'image';
-}
-async function ensureUniqueFilename(dir: string, base: string, ext: string): Promise<string> {
-  let name = `${base}.${ext}`;
-  let i = 2;
-  while (true) {
-    try {
-      await access(path.join(dir, name), fsConstants.F_OK);
-      name = `${base}-${i++}.${ext}`; // existe -> siguiente
-    } catch {
-      return name; // no existe
-    }
+// ===== Supabase Storage (server) =====
+const SUPABASE_PRODUCTS_BUCKET = process.env.SUPABASE_PRODUCTS_BUCKET ?? 'products';
+
+// ⚠️ No crear el cliente en top-level. Hazlo perezoso y valida envs.
+let _supabaseAdmin: SupabaseClient | null = null;
+function getSupabaseAdmin(): SupabaseClient {
+  if (_supabaseAdmin) return _supabaseAdmin;
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE; // SOLO servidor
+  if (!url || !serviceRole) {
+    throw new Error(
+      'Supabase env vars missing: NEXT_PUBLIC_SUPABASE_URL y/o SUPABASE_SERVICE_ROLE'
+    );
   }
+  _supabaseAdmin = createClient(url, serviceRole, { auth: { persistSession: false } });
+  return _supabaseAdmin;
 }
-async function saveProductImage(file: File): Promise<string> {
-  if (!file || file.size === 0) return '';
-  await mkdir(UPLOAD_DIR, { recursive: true });
-  const ext = getExtFromFile(file);
-  const base = safeBaseFromOriginal(file);
-  const filename = await ensureUniqueFilename(UPLOAD_DIR, base, ext);
-  const filepath = path.join(UPLOAD_DIR, filename);
+
+function getExtFromMime(mime?: string): string {
+  if (!mime) return 'png';
+  const m = mime.toLowerCase();
+  if (m.includes('jpeg')) return 'jpg';
+  if (m.includes('png')) return 'png';
+  if (m.includes('webp')) return 'webp';
+  if (m.includes('gif')) return 'gif';
+  if (m.includes('avif')) return 'avif';
+  return 'png';
+}
+
+function getObjectPathFromPublicUrl(url: string): string | null {
+  const base = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${SUPABASE_PRODUCTS_BUCKET}/`;
+  return url && base && url.startsWith(base) ? url.slice(base.length) : null;
+}
+
+async function uploadProductImageToSupabase(
+  file: File,
+  opts: { folder?: string; filenameBase?: string }
+): Promise<{ publicUrl: string; objectPath: string }> {
+  const supabase = getSupabaseAdmin();
+
+  const folder = (opts.folder ?? 'products').replace(/^\/+|\/+$/g, '');
+  const base = (opts.filenameBase ?? 'image').toLowerCase().replace(/[^a-z0-9-_]/g, '') || 'image';
+  const ext =
+    (file.name?.includes('.') && file.name.split('.').pop()?.toLowerCase()) ||
+    getExtFromMime(file.type);
+
+  const objectPath = `${folder}/${base}-${Date.now()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filepath, buffer);
-  return `${PUBLIC_PREFIX}/${filename}`;
+
+  const { error } = await supabase
+    .storage
+    .from(SUPABASE_PRODUCTS_BUCKET)
+    .upload(objectPath, buffer, {
+      contentType: file.type || `image/${ext}`,
+      upsert: false,
+    });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from(SUPABASE_PRODUCTS_BUCKET).getPublicUrl(objectPath);
+  return { publicUrl: data.publicUrl, objectPath };
 }
-async function deleteImageByUrl(url?: string | null) {
-  if (!url) return;
-  if (!url.startsWith(PUBLIC_PREFIX)) return;
-  if (url === DEFAULT_IMAGE_URL) return;
-  const rel = url.replace(/^\//, '');
-  const abs = path.join(process.cwd(), 'public', rel);
-  try {
-    await stat(abs);
-    await unlink(abs);
-  } catch {
-    /* no-op */
-  }
+
+async function deleteSupabaseImageByPublicUrl(url?: string | null) {
+  if (!url || url === DEFAULT_IMAGE_URL) return;
+  const path = getObjectPathFromPublicUrl(url);
+  if (!path) return;
+  const supabase = getSupabaseAdmin();
+  await supabase.storage.from(SUPABASE_PRODUCTS_BUCKET).remove([path]);
 }
 
 // ===== Composición (ingredientes) =====
@@ -94,7 +106,6 @@ const IngredientOutSchema = z.object({
 });
 const CompositionOutArraySchema = z.array(IngredientOutSchema);
 
-/** Normaliza cualquier formato a {nombre, cantidad}[] */
 type RawComposition = {
   nombre?: string;
   name?: string;
@@ -104,10 +115,10 @@ type RawComposition = {
 };
 
 function parseCompositionFromString(s?: string) {
-  if (s === undefined) return undefined; // update: no tocar
+  if (s === undefined) return undefined;
   const t = s.trim();
   if (t === '') return [];
-  let parsed: unknown;                 // 👈 antes era: any
+  let parsed: unknown;
   try {
     parsed = JSON.parse(t);
   } catch {
@@ -124,11 +135,12 @@ function parseCompositionFromString(s?: string) {
       ? (parsed as { composicion: unknown[] }).composicion
       : [];
 
-  const mapped = (candidate as RawComposition[]).map((x: RawComposition) => ({ // 👈 antes era any[]
-    nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
-    cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
-  }))
-  .filter((x) => x.nombre !== '');
+  const mapped = (candidate as RawComposition[])
+    .map((x) => ({
+      nombre: String(x?.nombre ?? x?.name ?? x?.ingrediente ?? '').trim(),
+      cantidad: String(x?.cantidad ?? x?.amount ?? '').trim(),
+    }))
+    .filter((x) => x.nombre !== '');
   return CompositionOutArraySchema.parse(mapped);
 }
 
@@ -137,6 +149,7 @@ async function ensureUniqueSlug(base: string, ignoreSlug?: string): Promise<stri
   let candidate = slugify(base);
   if (!candidate) candidate = 'producto';
   let i = 2;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const exists = await prisma.product.findUnique({ where: { slug: candidate } });
     if (!exists || (ignoreSlug && exists.slug === ignoreSlug)) return candidate;
@@ -146,7 +159,6 @@ async function ensureUniqueSlug(base: string, ignoreSlug?: string): Promise<stri
 
 // ===== Revalidación de páginas públicas =====
 function revalidateProductPages(newSlug: string, prevSlug?: string) {
-  // Ajusta estas rutas a tu tienda si usas otras (p. ej. solo '/tienda')
   const listPaths = ['/productos', '/tienda'];
   const toRevalidate = new Set<string>([
     '/admin/products',
@@ -158,16 +170,12 @@ function revalidateProductPages(newSlug: string, prevSlug?: string) {
     toRevalidate.add(`/productos/${prevSlug}`);
     toRevalidate.add(`/tienda/${prevSlug}`);
   }
-
-  // Si quieres ir a lo seguro, puedes descomentar esta línea para invalidar todo el layout:
   revalidatePath('/', 'layout');
-
   for (const p of toRevalidate) revalidatePath(p);
 }
 
 // ===== Helpers FormData =====
 function pickFields(fd: FormData) {
-  // Si imageUrl es '', lo dejamos undefined para NO sobreescribir la actual
   const rawImageUrl = fd.get('imageUrl');
   const imageUrl =
     typeof rawImageUrl === 'string' && rawImageUrl.trim() !== '' ? rawImageUrl : undefined;
@@ -202,7 +210,11 @@ export async function createProduct(formData: FormData) {
 
     let imageUrl = data.imageUrl ?? DEFAULT_IMAGE_URL;
     if (imageFile && imageFile.size > 0) {
-      imageUrl = await saveProductImage(imageFile);
+      const { publicUrl } = await uploadProductImageToSupabase(imageFile, {
+        folder: 'products',
+        filenameBase: finalSlug,
+      });
+      imageUrl = publicUrl;
     }
 
     await prisma.product.create({
@@ -218,7 +230,6 @@ export async function createProduct(formData: FormData) {
       },
     });
 
-    // 👇 invalida páginas públicas (listados + detalle)
     revalidateProductPages(finalSlug);
   } catch (err) {
     console.error('createProduct error:', err);
@@ -254,7 +265,11 @@ export async function updateProduct(slug: string, formData: FormData) {
     // Imagen nueva (si se sube)
     let newImageUrl: string | undefined;
     if (imageFile && imageFile.size > 0) {
-      newImageUrl = await saveProductImage(imageFile);
+      const { publicUrl } = await uploadProductImageToSupabase(imageFile, {
+        folder: 'products',
+        filenameBase: slugify(newSlug ?? current.slug),
+      });
+      newImageUrl = publicUrl;
     }
 
     await prisma.product.update({
@@ -266,7 +281,6 @@ export async function updateProduct(slug: string, formData: FormData) {
         ...(data.desc !== undefined && { desc: data.desc }),
         ...(data.longDesc !== undefined && { longDesc: data.longDesc }),
 
-        // Solo tocar imageUrl si hay nueva imagen o si se envió una imageUrl NO vacía
         ...(newImageUrl !== undefined && { imageUrl: newImageUrl }),
         ...(data.imageUrl !== undefined &&
           data.imageUrl.trim() !== '' &&
@@ -280,10 +294,10 @@ export async function updateProduct(slug: string, formData: FormData) {
     });
 
     if (newImageUrl) {
-      await deleteImageByUrl(current.imageUrl);
+      // borrar antigua si era pública del bucket
+      await deleteSupabaseImageByPublicUrl(current.imageUrl);
     }
 
-    // 👇 invalida páginas públicas (lista + detalle viejo/nuevo slug)
     revalidateProductPages(newSlug ?? slug, slug);
   } catch (err) {
     console.error('updateProduct error:', err);
@@ -295,8 +309,6 @@ export async function deleteProduct(slug: string) {
   await requireAdmin();
   const current = await prisma.product.findUnique({ where: { slug } });
   await prisma.product.delete({ where: { slug } });
-  await deleteImageByUrl(current?.imageUrl);
-
-  // 👇 invalida listados y la página del producto borrado
+  await deleteSupabaseImageByPublicUrl(current?.imageUrl);
   revalidateProductPages(slug);
 }
