@@ -59,7 +59,7 @@ export default async function ProductoPage({ params }: { params: Promise<Params>
   return (
     <section className="bg-stone-50 py-16 px-4">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 items-top gap-8">
-        <div className="relative aspect-square bg-stone-100 rounded-lg overflow-hidden">
+        <div className="relative aspect-square bg-[radial-gradient(ellipse_at_center,_theme(colors.stone.50)_20%,_theme(colors.stone.100)_60%)] rounded-lg overflow-hidden">
           <Image
             src={imgSrc}
             alt={producto.name}
@@ -85,7 +85,7 @@ export default async function ProductoPage({ params }: { params: Promise<Params>
             </div>
           )}
 
-          <p className="text-lg text-emerald-700 mt-3">{Number(producto.price).toFixed(2)} €</p>
+          <p className="text-lg text-emerald-600 font-semibold mt-3">{Number(producto.price).toFixed(2)} €</p>
 
           <AddToCartButton
             id={slug}

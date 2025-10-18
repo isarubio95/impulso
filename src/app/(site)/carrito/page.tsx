@@ -42,12 +42,12 @@ export default function CartPage() {
               <p className="text-sm">{formatEUR(i.price)}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button className="px-2 py-1 border rounded"
+              <button className="px-2 py-1 cursor-pointer border rounded"
                 onClick={() => dispatch({ type: 'DEC', payload: { id: i.id, variant: i.variant } })}>−</button>
               <span>{i.qty}</span>
-              <button className="px-2 py-1 border rounded"
+              <button className="px-2 py-1 cursor-pointer border rounded"
                 onClick={() => dispatch({ type: 'INC', payload: { id: i.id, variant: i.variant } })}>+</button>
-              <button className="px-3 py-1 border rounded text-rose-600"
+              <button className="px-3 py-1 cursor-pointer border rounded text-rose-600"
                 onClick={() => dispatch({ type: 'REMOVE', payload: { id: i.id, variant: i.variant } })}>Quitar</button>
             </div>
           </li>
@@ -60,7 +60,7 @@ export default function CartPage() {
       </div>
 
       <button
-        className="w-full py-3 rounded-xl bg-green-600 text-white font-semibold disabled:opacity-60"
+        className="w-full py-3 cursor-pointer rounded-xl bg-green-600 text-white font-semibold disabled:opacity-60"
         disabled={pending}
         onClick={iniciarCheckout}
       >

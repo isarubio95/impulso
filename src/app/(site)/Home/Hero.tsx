@@ -41,7 +41,7 @@ export default function Hero() {
               src={HeroImg}
               alt="Mujer sonriendo con manzana"
               fill
-              className="object-left-bottom object-contain"
+              className="object-left-bottom object-contain drop-shadow-sm"
               priority
             />
           </div>

@@ -1,4 +1,3 @@
-// src/app/(shop)/checkout/page.tsx
 import { prisma } from '@/lib/db'
 import { requireUser } from '@/lib/auth'
 import CheckoutClient from './ui/CheckoutClient'

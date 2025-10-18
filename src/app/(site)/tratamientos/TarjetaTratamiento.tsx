@@ -35,7 +35,7 @@ export default function TarjetaTratamiento({ titulo, resumen, slug, img, alt }: 
                 </div>
 
                 {/* Imagen */}
-                <div className="flex-1 relative bg-emerald-50">
+                <div className="flex-1 relative bg-[radial-gradient(ellipse_at_center,_theme(colors.stone.100)_20%,_theme(colors.emerald.50)_70%)]">
                     <div className="relative w-full h-56">
                         <Image
                             src={img}

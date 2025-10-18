@@ -50,7 +50,7 @@ export default function TratamientosHome() {
       </h2>
 
       {/* Grid tratamientos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl w-full">
         {items === null && !error && (
           <>
             {[0, 1, 2, 3].map((i) => (
@@ -87,8 +87,8 @@ export default function TratamientosHome() {
       </div>
 
       {/* Ver más */}
-      <Link href="/tienda" className="text-sm text-sky-600 hover:underline">
-        Ver más productos
+      <Link href="/tratamientos" className="text-sm text-sky-600 hover:underline">
+        Ver más tratamientos
       </Link>
 
       {/* Citas personalizadas */}
@@ -105,7 +105,7 @@ export default function TratamientosHome() {
             ofrecerte un plan de tratamientos. Ofrecemos atención personalizada en función de tus
             necesidades desde el primer contacto.
           </p>
-          <div className="w-fit">
+          <div className="md:w-fit">
             <CTA href="/citas" texto="Ver más" />
           </div>
         </div>

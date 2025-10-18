@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import Logo from '@/assets/img/logo.png'
-import { useCart } from '@/app/(site)/components/cart/CartProvider';
-import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider';
-import { FaBars, FaTimes, FaUser, FaShoppingCart } from 'react-icons/fa'
+import { useCart } from '@/app/(site)/components/cart/CartProvider'
+import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider'
+import { FaBars, FaShoppingCart, FaRegUser, FaUser, FaTimes } from 'react-icons/fa'
+import { FiShoppingCart } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -15,17 +16,18 @@ type Me = { id: string; name: string | null; email: string; role: 'user' | 'admi
 
 export default function Header() {
   const pathname = usePathname()
+
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
-  const [lastScroll, setLastScroll] = useState(0)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const lastYRef = useRef(0)
+  const topSentinelRef = useRef<HTMLDivElement | null>(null)
 
-  const { count } = useCart();
-  const { openCart } = useCartUI();
+  const { count } = useCart()
+  const { openCart } = useCartUI()
 
-  const [me, setMe] = useState<Me | undefined>(undefined);
+  const [me, setMe] = useState<Me | undefined>(undefined)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-
-  // ⬇️ ref para detectar clic fuera del menú de usuario
   const userMenuRef = useRef<HTMLDivElement | null>(null)
 
   const navItems = [
@@ -36,27 +38,13 @@ export default function Header() {
     { href: '/contacto', label: 'Contacto' },
   ]
 
-  // Bloquear scroll al abrir
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  // Ocultar/mostrar header con scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const y = window.scrollY
-      setIsVisible(y < 50 || y < lastScroll)
-      setLastScroll(y)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScroll])
-
-  // Cerrar menús al navegar
   useEffect(() => { setIsOpen(false) }, [pathname])
 
-  // Cargar usuario
   async function loadUser() {
     try {
       const r = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' })
@@ -67,42 +55,73 @@ export default function Header() {
       setMe(null)
     }
   }
-  useEffect(() => { loadUser() }, [])           // al montar
-  useEffect(() => { loadUser() }, [pathname])   // al navegar
+  useEffect(() => { loadUser() }, [])
+  useEffect(() => { loadUser() }, [pathname])
 
-  // ⬇️ cerrar menú usuario al hacer clic fuera
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
       if (!userMenuOpen) return
       const el = userMenuRef.current
-      if (el && !el.contains(e.target as Node)) {
-        setUserMenuOpen(false)
-      }
+      if (el && !el.contains(e.target as Node)) setUserMenuOpen(false)
     }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [userMenuOpen])
-
-  // ⬇️ cerrar con tecla Escape
-  useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') setUserMenuOpen(false)
     }
+    document.addEventListener('pointerdown', onPointerDown)
     document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [userMenuOpen])
+
+  useEffect(() => {
+    const el = topSentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => setIsScrolled(!entry.isIntersecting),
+      { rootMargin: '-1px 0px 0px 0px', threshold: 0 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
   }, [])
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY
+      const last = lastYRef.current
+      if (y < 12) setIsVisible(true)
+      else setIsVisible(y < last)
+      lastYRef.current = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // rose-100 = #ffe4e6
+  const bgColor = isScrolled ? 'rgba(255, 228, 230, 0.9)' : 'rgba(255, 228, 230, 1)'
 
   return (
     <>
-      {/* HEADER */}
       <header
         className={cn(
-          'sticky top-0 left-0 h-fit w-full bg-rose-100 border-b shadow-lg transition-transform duration-300 z-40',
+          'sticky top-0 left-0 w-full z-40 relative overflow-visible', // <- overflow visible para que sobresalga el menú
+          'shadow-lg',
+          'transition-transform duration-300 will-change-transform',
+          'backdrop-blur-sm',
           isVisible ? 'translate-y-0' : '-translate-y-full'
         )}
+        style={{
+          backgroundColor: bgColor,
+          transform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
+          WebkitTransform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          // ¡Quitado contain: 'paint' para que no recorte el dropdown!
+        }}
       >
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/">
+          <Link href="/" aria-label="Ir a inicio">
             <Image src={Logo} alt="Logotipo de Impulso" width={50} />
           </Link>
 
@@ -121,15 +140,18 @@ export default function Header() {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-baseline gap-5">
-            {/* Botón usuario + menú */}
-            <div className="relative" ref={userMenuRef}>
+          <div className="hidden md:flex items-center gap-5">
+            <div className="relative flex items-center" ref={userMenuRef}>
               <button
-                aria-label="Cuenta"
+                aria-label={userMenuOpen ? 'Cerrar menú de cuenta' : 'Abrir menú de cuenta'}
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className='cursor-pointer'
+                className="cursor-pointer"
               >
-                <FaUser className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                {userMenuOpen ? (
+                  <FaUser className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                ) : (
+                  <FaRegUser className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                )}
               </button>
 
               <AnimatePresence>
@@ -139,7 +161,7 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-1 w-48 bg-emerald-50 text-stone-600 rounded-md shadow-lg p-2"
+                    className="absolute top-full right-0 mt-1 w-48 bg-emerald-50 text-stone-600 rounded-md shadow-lg p-2 z-50" // <- z alto
                   >
                     {me ? (
                       <>
@@ -153,10 +175,12 @@ export default function Header() {
                         >
                           Área cliente
                         </Link>
-                        <form action={async () => {
-                          const mod = await import('@/lib/auth')
-                          await mod.signOut()
-                        }}>
+                        <form
+                          action={async () => {
+                            const mod = await import('@/lib/auth')
+                            await mod.signOut()
+                          }}
+                        >
                           <button
                             type="submit"
                             className="block w-full text-left px-2 py-1 text-sm rounded hover:bg-stone-100 cursor-pointer"
@@ -184,9 +208,13 @@ export default function Header() {
               aria-label="Abrir carrito"
               aria-controls="cart-drawer"
               onClick={() => openCart()}
-              className="relative inline-block cursor-pointer"
+              className="relative flex items-center cursor-pointer"
             >
-              <FaShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+              {count > 0 ? (
+                <FaShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+              ) : (
+                <FiShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+              )}
               {count > 0 && (
                 <span
                   aria-label={`${count} artículos en el carrito`}
@@ -198,17 +226,43 @@ export default function Header() {
             </button>
           </div>
 
-          <button
-            className="md:hidden text-stone-900 cursor-pointer"
-            onClick={() => setIsOpen(true)}
-            aria-label="Abrir menú"
-          >
-            <FaBars className="w-5 h-5" />
-          </button>
+          <div className="md:hidden flex items-center gap-5">
+            <button
+              type="button"
+              aria-label="Abrir carrito"
+              aria-controls="cart-drawer"
+              onClick={() => openCart()}
+              className="relative inline-block cursor-pointer"
+            >
+              {count > 0 ? (
+                <FaShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+              ) : (
+                <FiShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+              )}
+              {count > 0 && (
+                <span
+                  aria-label={`${count} artículos en el carrito`}
+                  className="absolute -top-2 -right-3 text-xs bg-green-600 font-semibold text-white rounded-full px-1.5 py-0.5"
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+
+            <button
+              className="text-stone-900 cursor-pointer"
+              onClick={() => setIsOpen(true)}
+              aria-label="Abrir menú"
+            >
+              <FaBars className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* OVERLAY + MENÚ (fuera del header) */}
+      {/* Sentinela para IO */}
+      <div ref={topSentinelRef} aria-hidden className="h-px w-full" />
+
       <AnimatePresence>
         {isOpen && (
           <>
@@ -247,16 +301,10 @@ export default function Header() {
                 </Link>
               ))}
 
-              <div className="mt-6 flex gap-4">
+              <div className="mt-6">
                 <Link href={me ? '/cuenta' : '/login'} aria-label="Cuenta" onClick={() => setIsOpen(false)}>
                   <FaUser className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
                 </Link>
-                <button
-                  aria-label="Carrito"
-                  onClick={() => { console.log('openCart() click'); openCart(); }}
-                >
-                  <FaShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
-                </button>
               </div>
             </motion.nav>
           </>

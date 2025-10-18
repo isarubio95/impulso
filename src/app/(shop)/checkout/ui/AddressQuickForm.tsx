@@ -1,4 +1,3 @@
-// src/app/(shop)/checkout/ui/AddressQuickForm.tsx
 'use client'
 
 import { useState, useTransition } from 'react'
@@ -17,11 +16,15 @@ export default function AddressQuickForm() {
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault()
-    const fd = new FormData(e.currentTarget)
+
+    const form = e.currentTarget                 // ✅ captura el form ya
+    const fd = new FormData(form)
+
     // marcar por defecto si no viene marcado (primera vez)
     if (!fd.get('isDefault')) fd.set('isDefault', 'on')
 
     setErr(null)
+
     start(async () => {
       const res = (await upsertAddress(fd)) as UpsertAddressResult
 
@@ -31,7 +34,7 @@ export default function AddressQuickForm() {
       }
 
       // ok
-      e.currentTarget.reset()
+      form.reset()                               // ✅ usa la referencia capturada
       setOpen(false)
       router.refresh()
     })
@@ -42,7 +45,7 @@ export default function AddressQuickForm() {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="px-3 py-1.5 border rounded-md text-sm"
+        className="px-3 bg-stone-600 hover:bg-stone-700 text-white py-2 cursor-pointer rounded-md text-sm"
       >
         {open ? 'Cerrar' : 'Añadir dirección'}
       </button>
@@ -86,7 +89,7 @@ export default function AddressQuickForm() {
 
           <div className="md:col-span-2">
             <button
-              className="px-4 py-2 rounded-md bg-emerald-600 text-white disabled:opacity-60"
+              className="px-4 py-2 rounded-md cursor-pointer bg-emerald-600 text-white disabled:opacity-60"
               disabled={pending}
             >
               {pending ? 'Guardando…' : 'Guardar dirección'}

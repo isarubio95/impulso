@@ -58,7 +58,7 @@ export default async function TratamientosPage() {
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Cabecera */}
-      <div className="max-w-5xl mx-auto text-center mb-10">
+      <div className="max-w-4xl mx-auto text-center mb-10">
         <h1 className="text-2xl font-semibold text-stone-800">Tratamientos</h1>
         <p className="mt-3 text-stone-600 max-w-3xl mx-auto">
           Descubre nuestros tratamientos y reserva tu cita.
@@ -66,7 +66,7 @@ export default async function TratamientosPage() {
       </div>
 
       {/* Lista */}
-      <div className="max-w-4xl mx-auto flex flex-col gap-5">
+      <div className="max-w-3xl mx-auto flex flex-col gap-5">
         {items.length === 0 ? (
           <p className="text-center text-stone-600">Aún no hay tratamientos disponibles.</p>
         ) : (

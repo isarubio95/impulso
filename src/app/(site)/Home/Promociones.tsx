@@ -51,7 +51,7 @@ export default function Promociones() {
   return (
     <section className="bg-rose-50 py-20 pl-2.5 pr-0 sm:px-2 sm:pr-2 flex flex-col items-center gap-8">
       {/* Controles y Carrusel */}
-      <div className="flex justify-center items-center gap-4 w-full max-w-5xl">
+      <div className="flex justify-center items-center gap-3 w-full max-w-5xl">
         <button
             aria-label="Anterior"
             onClick={handlePrev}
@@ -114,9 +114,9 @@ export default function Promociones() {
           <button
             key={i}
             onClick={() => setCurrentPage(i)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ${
               i === currentPage
-                ? 'bg-rose-600'
+                ? 'bg-rose-700 hover:bg-rose-800'
                 : 'bg-stone-300 hover:bg-stone-400'
             }`}
             aria-label={`Ir a página ${i + 1}`}

@@ -1,4 +1,3 @@
-// src/app/(shop)/checkout/ui/CheckoutClient.tsx
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
@@ -59,18 +58,17 @@ export default function CheckoutClient({
   }
 
   return (
-    <section className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Checkout</h1>
+    <section className="bg-stone-200 min-h-screen py-10 px-6 space-y-6">
 
       {/* Dirección */}
-      <div className="border rounded-lg p-4">
-        <h2 className="text-xl font-semibold mb-2">Dirección de envío</h2>
+      <div className="bg-stone-100 shadow-softer text-stone-800 max-w-2xl mx-auto rounded-lg p-4">
+        <p className="text-xl font-semibold mb-2">Dirección de envío</p>
 
         {addresses.length > 0 ? (
           <div className="space-y-2">
-            <label className="text-sm opacity-70">Usar dirección</label>
+            <label className="text-sm mr-2 opacity-80">Usar dirección:</label>
             <select
-              className="border rounded-md px-3 py-2 text-sm"
+              className="ring ring-black/50 focus:ring-1 shadow-inner rounded-md px-3 py-2 text-sm"
               value={addressId}
               onChange={(e) => setAddressId(e.target.value)}
             >
@@ -89,31 +87,33 @@ export default function CheckoutClient({
       </div>
 
       {/* Resumen */}
-      <div className="border rounded-lg p-4">
+      <div className="bg-stone-100 shadow-softer text-stone-800 max-w-2xl mx-auto rounded-lg p-4">
         <h2 className="text-xl font-semibold mb-2">Resumen</h2>
-        <p className="font-semibold">Subtotal: {(subtotalCents / 100).toFixed(2)} €</p>
+        <span>Subtotal: </span><span className='text-green-800 font-semibold'>{(subtotalCents / 100).toFixed(2)} €</span>
         {!hasItems && <p className="text-sm opacity-70 mt-2">Tu carrito está vacío.</p>}
       </div>
 
       {/* Pago / Stripe */}
-      {!clientSecret ? (
-        <button
-          onClick={startPayment}
-          disabled={pending || !hasItems}
-          className="px-4 py-2 rounded-md bg-emerald-600 text-white disabled:opacity-60"
-        >
-          {pending ? 'Preparando pago…' : 'Ir a pago'}
-        </button>
-      ) : (
-        stripePromise && (
-          <Elements
-            stripe={stripePromise as unknown as Promise<Stripe | null>}
-            options={{ clientSecret }}
+      <div className="max-w-2xl mx-auto">
+        {!clientSecret ? (
+          <button
+            onClick={startPayment}
+            disabled={pending || !hasItems}
+            className="w-full block px-4 py-2 cursor-pointer rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-60"
           >
-            <PaySection />
-          </Elements>
-        )
-      )}
+            {pending ? 'Preparando pago…' : 'Ir a pago'}
+          </button>
+        ) : (
+          stripePromise && (
+            <Elements
+              stripe={stripePromise as unknown as Promise<Stripe | null>}
+              options={{ clientSecret }}
+            >
+              <PaySection />
+            </Elements>
+          )
+        )}
+      </div>
 
       {!PK && (
         <p className="text-amber-600 text-sm">
@@ -141,7 +141,7 @@ function PaySection() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="max-w-2xl mx-auto space-y-3">
       <PaymentElement />
       <button
         onClick={pay}
