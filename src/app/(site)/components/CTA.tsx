@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 type CTAProps = {
   texto: string;
@@ -6,12 +7,33 @@ type CTAProps = {
   href?: string;
   icono?: React.ReactNode;
   disabled?: boolean;
+  variant?: 'primary' | 'secondary' | 'destructive' | 'success';
+  className?: string;
 };
 
-export default function CTA({ texto, onClick, href, icono, disabled }: CTAProps) {
+export default function CTA({
+  texto,
+  onClick,
+  href,
+  icono,
+  disabled,
+  variant = 'primary',
+  className,
+}: CTAProps) {
+
   const baseStyles =
-    'inline-flex w-full flex justify-center items-center gap-2 bg-rose-700 text-white px-4 py-2 rounded-full shadow-sm hover:shadow-md text-sm font-bold transition-all duration-300 transition cursor-pointer';
-  
+    'inline-flex w-full justify-center items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-bold cursor-pointer transition-colors duration-200';
+
+  const variantStyles = {
+    primary:
+      // 👇 CAMBIOS AQUÍ: Añadimos más efectos al hover y un efecto al click
+      'bg-gradient-to-br from-rose-600 to-rose-800 text-white hover:from-rose-700 hover:to-rose-800 hover:shadow-md active:scale-95',
+
+    secondary: 'bg-transparent text-rose-700 ring-1 ring-inset ring-rose-700 hover:bg-rose-50',
+    destructive: 'bg-red-600 text-white hover:bg-red-700',
+    success: 'bg-emerald-600 text-white hover:bg-emerald-700',
+  };
+
   const contenido = (
     <>
       {texto}
@@ -19,12 +41,20 @@ export default function CTA({ texto, onClick, href, icono, disabled }: CTAProps)
     </>
   );
 
-  // Si es un enlace
+  const finalClassName = cn(
+    baseStyles,
+    variantStyles[variant],
+    {
+      'opacity-50 pointer-events-none cursor-not-allowed': disabled,
+    },
+    className
+  );
+
   if (href) {
     return (
       <Link
         href={href}
-        className={`${baseStyles} ${disabled ? 'opacity-50 pointer-events-none cursor-not-allowed hover:shadow-sm hover:scale-100' : 'hover:opacity-80 hover:scale-101'}`}
+        className={finalClassName}
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : undefined}
       >
@@ -33,13 +63,8 @@ export default function CTA({ texto, onClick, href, icono, disabled }: CTAProps)
     );
   }
 
-  // Si es un botón
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`${baseStyles} ${disabled ? 'opacity-50 cursor-not-allowed hover:shadow-sm hover:scale-100' : 'hover:scale-101'}`}
-    >
+    <button onClick={onClick} disabled={disabled} className={finalClassName}>
       {contenido}
     </button>
   );
