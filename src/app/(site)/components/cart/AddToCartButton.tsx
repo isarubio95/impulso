@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useCart } from './CartProvider';
 import { cn } from '@/lib/utils';
 import { FaShoppingCart } from 'react-icons/fa';
+import CTA from '../CTA';
 
 type Props = {
   id: string;
@@ -51,7 +52,7 @@ export default function AddToCartButton({
           type="button"
           onClick={dec}
           aria-label="Disminuir cantidad"
-          className="px-3 py-2 cursor-pointer text-stone-700 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+          className="px-3 py-1.5 cursor-pointer text-stone-700 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
         >
           −
         </button>
@@ -65,32 +66,23 @@ export default function AddToCartButton({
           type="button"
           onClick={inc}
           aria-label="Aumentar cantidad"
-          className="px-3 py-2 cursor-pointer text-stone-700 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+          className="px-3 py-1.5 cursor-pointer text-stone-700 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
         >
           +
         </button>
       </div>
 
-      {/* Botón grande “Añadir al carrito” */}
-      <button
-        type="button"
+      <CTA
+        texto="Añadir al carrito"
         onClick={add}
-        className={cn(
-          // base
-          'flex items-center justify-center gap-2 text-white text-sm px-4 py-3 rounded-full font-bold shadow-sm',
-          // color (fucsia tipo la imagen)
-          'bg-rose-700 hover:opacity-80',
-          // interacción
-          'hover:shadow-md hover:scale-101 active:scale-100',
-          'transition-transform duration-200 cursor-pointer',
-          // focus
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#f50057]',
-          className
-        )}
+        icono={<FaShoppingCart className="w-4 h-4" />}
+        className="w-fit h-full"
       >
-        <FaShoppingCart className="w-4 h-4 text-white" aria-hidden="true" />
-        Añadir al carrito
-      </button>
+      </CTA>
+      
+      
+      <FaShoppingCart className="w-4 h-4 text-white" aria-hidden="true" />
+       
     </div>
   );
 }

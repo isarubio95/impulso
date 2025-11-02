@@ -1,9 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import CTA from '../components/CTA';
 
 type Step = 1 | 2 | 3;
+
+// Definimos el tipo para las citas que recibimos de la API
+type BookedAppointment = {
+  startsAt: string;
+};
 
 const SLOT_MIN = 30;
 const MORNING = { start: 9, end: 14 };      // 09:00–14:00
@@ -31,10 +36,14 @@ function buildSlots(dateStr: string) {
 export default function CitasPage() {
   const [step, setStep] = useState<Step>(1);
 
+  // --- ESTADOS ---
   // Paso 1
   const [date, setDate] = useState('');
   const minDate = new Date().toISOString().slice(0, 10);
   const slots = useMemo(() => buildSlots(date), [date]);
+  
+  // 💡 Nuevo estado para guardar las citas ya reservadas
+  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
 
   // Paso 2
   const [selectedISO, setSelectedISO] = useState('');
@@ -47,6 +56,30 @@ export default function CitasPage() {
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 💡 Efecto para cargar las citas ocupadas cuando cambia la fecha
+  useEffect(() => {
+    if (!date) return;
+
+    // Reseteamos las horas ocupadas al cambiar de día
+    setBookedSlots(new Set()); 
+
+    async function fetchBookedSlots() {
+      try {
+        const res = await fetch(`/api/appointments?day=${date}`);
+        const { items } = (await res.json()) as { items: BookedAppointment[] };
+        
+        // Creamos un Set con las horas de inicio (en formato ISO) para una búsqueda rápida
+        const bookedISOs = new Set(items.map(item => new Date(item.startsAt).toISOString()));
+        setBookedSlots(bookedISOs);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      }
+    }
+
+    fetchBookedSlots();
+  }, [date]);
+
 
   const timeLabel = (d: Date) =>
     d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -105,7 +138,7 @@ export default function CitasPage() {
 
       alert('¡Solicitud enviada! Te confirmaremos por teléfono o email.');
       reset();
-    } catch (err: unknown) {               // ← 2) fuera el any
+    } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Ha ocurrido un error al reservar la cita.';
       alert(msg);
     } finally {
@@ -203,18 +236,25 @@ export default function CitasPage() {
               {slots.map((d) => {
                 const iso = d.toISOString();
                 const isPast = isToday && d.getTime() <= now.getTime();
+                // 💡 Comprobamos si la hora está en nuestro Set de citas reservadas
+                const isBooked = bookedSlots.has(iso);
                 const active = selectedISO === iso;
+                const isDisabled = isPast || isBooked;
 
                 return (
                   <button
                     key={iso}
                     role="option"
                     aria-selected={active}
-                    disabled={isPast}
+                    disabled={isDisabled}
                     onClick={() => setSelectedISO(iso)}
-                    className={`rounded-md border px-3 py-2 text-sm text-stone-600 transition cursor-pointer
-                      ${active ? 'border-rose-600 ring-2 ring-rose-200' : 'border-stone-300 hover:border-stone-500'}
-                      ${isPast ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    // 💡 Aplicamos clases condicionales
+                    className={`rounded-md border px-3 py-2 text-sm transition
+                      ${active ? 'border-rose-600 ring-2 ring-rose-200' : 'border-stone-300'}
+                      ${isDisabled
+                        ? 'bg-stone-100 text-stone-400 line-through cursor-not-allowed' // Estilo para deshabilitado/tachado
+                        : 'text-stone-600 hover:border-stone-500 cursor-pointer'
+                      }`}
                   >
                     {timeLabel(d)}
                   </button>

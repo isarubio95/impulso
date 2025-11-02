@@ -6,6 +6,7 @@ import { useCart } from './CartProvider';
 import { useCartUI } from './CartUIProvider';
 import { formatEUR } from '@/lib/cart/money';
 import { persistCartAndGoCheckout } from './actions';
+import CTA from '../CTA';
 
 export default function CartDrawer() {
   const { state, dispatch, subtotal, ready } = useCart();
@@ -53,65 +54,70 @@ export default function CartDrawer() {
             aria-modal="true"
             aria-label="Carrito"
             id="cart-drawer"
-            className="fixed right-0 top-0 h-dvh w-[90%] max-w-md z-[1001] bg-white dark:bg-neutral-900 shadow-2xl p-4 flex flex-col"
+            className="fixed right-0 top-0 h-dvh w-[90%] max-w-md z-[1001] bg-stone-100 shadow-2xl px-5 py-4 flex flex-col"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Tu carrito</h2>
-              <button onClick={closeCart} aria-label="Cerrar">✖</button>
+              <h1 className="text-lg font-semibold text-stone-900">Tu carrito</h1>
+              <button onClick={closeCart} className='text-stone-900 cursor-pointer p-2' aria-label="Cerrar">✖</button>
             </div>
 
             {!ready ? (
-              <p className="opacity-70">Cargando…</p>
+              <p className="opacity-70 text-stone-900">Cargando…</p>
             ) : state.items.length === 0 ? (
-              <p className="opacity-70">Tu carrito está vacío.</p>
+              <p className="opacity-70 text-stone-900">Tu carrito está vacío.</p>
             ) : (
               <ul className="space-y-3 overflow-auto pr-1 flex-1">
                 {state.items.map((i) => (
-                  <li key={`${i.id}-${i.variant ?? ''}`} className="flex gap-3 items-center">
+                  <li key={`${i.id}-${i.variant ?? ''}`} 
+                    className="flex gap-2 sm:gap-3 items-center bg-stone-200 px-2 py-3 rounded-md">
                     {i.image && (
                       <img
                         src={i.image}
                         alt={i.name}
-                        className="w-16 h-16 object-cover rounded-md"
+                        className="w-20 h-20 sm:mx-2 object-cover rounded-md"
                       />
                     )}
-                    <div className="flex-1">
-                      <p className="font-medium">{i.name}</p>
-                      {i.variant && <p className="text-sm opacity-70">{i.variant}</p>}
-                      <p className="text-sm">{formatEUR(i.price)}</p>
-                      <div className="mt-1 inline-flex items-center gap-2">
-                        <button
-                          className="px-2 py-1 rounded bg-neutral-200 dark:bg-neutral-800"
-                          onClick={() =>
-                            dispatch({ type: 'DEC', payload: { id: i.id, variant: i.variant } })
-                          }
-                          aria-label="Disminuir cantidad"
-                        >
-                          −
-                        </button>
-                        <span aria-live="polite">{i.qty}</span>
-                        <button
-                          className="px-2 py-1 rounded bg-neutral-200 dark:bg-neutral-800"
-                          onClick={() =>
-                            dispatch({ type: 'INC', payload: { id: i.id, variant: i.variant } })
-                          }
-                          aria-label="Aumentar cantidad"
-                        >
-                          +
-                        </button>
-                        <button
-                          className="ml-2 text-sm text-rose-600"
-                          onClick={() =>
-                            dispatch({ type: 'REMOVE', payload: { id: i.id, variant: i.variant } })
-                          }
-                        >
-                          Quitar
-                        </button>
-                      </div>
+                    <div className="flex flex-col w-full">
+                      <p className="font-medium text-stone-900">{i.name}</p>
+                      {i.variant && <p className="text-sm opacity-70 text-stone-900">{i.variant}</p>}
+                      <p className="text-sm text-stone-900">{formatEUR(i.price)}</p>
+                      <div className='flex justify-between items-center mt-2'>
+                        <div className="inline-flex items-center rounded-lg border border-stone-200 bg-stone-50 text-stone-800 shadow-sm overflow-hidden">
+                          <button
+                            className="px-2.5 cursor-pointer py-1.5 text-stone-700 hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                            onClick={() =>
+                              dispatch({ type: 'DEC', payload: { id: i.id, variant: i.variant } })
+                            }
+                            aria-label="Disminuir cantidad"
+                          >
+                            −
+                          </button>
+                          <span aria-live="polite" className="min-w-[2.5rem] text-center select-none">{i.qty}</span>
+                          <button
+                            className="px-2.5 py-1.5 text-stone-700 hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 cursor-pointer"
+                            onClick={() =>
+                              dispatch({ type: 'INC', payload: { id: i.id, variant: i.variant } })
+                            }
+                            aria-label="Aumentar cantidad"
+                          >
+                            +
+                          </button>                        
+                        </div>
+                        <div>
+                          <button
+                            className="mr-3 text-sm text-rose-700 hover:text-rose-800 cursor-pointer"
+                            onClick={() =>
+                              dispatch({ type: 'REMOVE', payload: { id: i.id, variant: i.variant } })
+                            }
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      </div>                    
                     </div>
                   </li>
                 ))}
@@ -120,24 +126,26 @@ export default function CartDrawer() {
 
             <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
               <div className="flex justify-between mb-3">
-                <span className="font-medium">Subtotal</span>
-                <span className="font-semibold">{formatEUR(subtotal)}</span>
+                <span className="font-medium text-stone-900">Subtotal</span>
+                <span className="font-semibold text-stone-900">{formatEUR(subtotal)}</span>
               </div>
 
-              <button
-                className="w-full py-2 rounded-xl bg-green-600 text-white font-semibold disabled:opacity-60"
-                disabled={pending || !ready || state.items.length === 0}
+              <CTA
+                texto={pending ? 'Iniciando…' : 'Iniciar checkout'}
                 onClick={goCheckout}
-              >
-                {pending ? 'Iniciando…' : 'Iniciar checkout'}
-              </button>
-
-              <button
-                className="w-full mt-2 py-2 rounded-xl border"
+                disabled={pending || !ready || state.items.length === 0}
+                className='bg-emerald-600 hover:bg-emerald-700'
+              />
+            
+              <CTA
+                texto='Vaciar carrito'
+                variant='secondary'
                 onClick={() => dispatch({ type: 'CLEAR' })}
-              >
-                Vaciar carrito
-              </button>
+                className='mt-2'
+                // 👇 CAMBIO APLICADO AQUÍ
+                disabled={!ready || state.items.length === 0}
+              />
+              
             </div>
           </motion.aside>
         </>

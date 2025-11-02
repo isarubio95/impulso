@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import Logo from '@/assets/img/logo.png'
-import { useCart } from '@/app/(site)/components/cart/CartProvider'
-import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider'
+import { useCart } from '@/app/(site)/components/cart/CartProvider';
+import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider';
 import { FaBars, FaShoppingCart, FaRegUser, FaUser, FaTimes } from 'react-icons/fa'
 import { FiShoppingCart } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,17 +16,16 @@ type Me = { id: string; name: string | null; email: string; role: 'user' | 'admi
 
 export default function Header() {
   const pathname = usePathname()
-
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
-  const [isScrolled, setIsScrolled] = useState(false)
+  
+  // 👇 CAMBIO: Usamos useRef para la última posición del scroll
   const lastYRef = useRef(0)
-  const topSentinelRef = useRef<HTMLDivElement | null>(null)
 
-  const { count } = useCart()
-  const { openCart } = useCartUI()
+  const { count } = useCart();
+  const { openCart } = useCartUI();
 
-  const [me, setMe] = useState<Me | undefined>(undefined)
+  const [me, setMe] = useState<Me | undefined>(undefined);
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -38,13 +37,34 @@ export default function Header() {
     { href: '/contacto', label: 'Contacto' },
   ]
 
+  // Bloquear scroll al abrir menú móvil
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
+  // 👇 CAMBIO: useEffect mejorado para manejar el scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY
+      const lastY = lastYRef.current
+      
+      // Es visible si estás cerca de la parte superior o si subes
+      setIsVisible(y < 50 || y < lastY)
+      
+      // Actualiza la referencia para el próximo evento
+      lastYRef.current = y
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, []) // 👈 El array de dependencias está vacío para que se ejecute solo una vez
+
+
+  // Cerrar menús al navegar
   useEffect(() => { setIsOpen(false) }, [pathname])
 
+  // Cargar usuario
   async function loadUser() {
     try {
       const r = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' })
@@ -58,11 +78,14 @@ export default function Header() {
   useEffect(() => { loadUser() }, [])
   useEffect(() => { loadUser() }, [pathname])
 
+  // Cerrar menú de usuario al hacer clic fuera o con Escape
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
       if (!userMenuOpen) return
       const el = userMenuRef.current
-      if (el && !el.contains(e.target as Node)) setUserMenuOpen(false)
+      if (el && !el.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') setUserMenuOpen(false)
@@ -75,53 +98,16 @@ export default function Header() {
     }
   }, [userMenuOpen])
 
-  useEffect(() => {
-    const el = topSentinelRef.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      ([entry]) => setIsScrolled(!entry.isIntersecting),
-      { rootMargin: '-1px 0px 0px 0px', threshold: 0 }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY
-      const last = lastYRef.current
-      if (y < 12) setIsVisible(true)
-      else setIsVisible(y < last)
-      lastYRef.current = y
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // rose-100 = #ffe4e6
-  const bgColor = isScrolled ? 'rgba(255, 228, 230, 0.9)' : 'rgba(255, 228, 230, 1)'
-
   return (
     <>
       <header
         className={cn(
-          'sticky top-0 left-0 w-full z-40 relative overflow-visible', // <- overflow visible para que sobresalga el menú
-          'shadow-lg',
-          'transition-transform duration-300 will-change-transform',
-          'backdrop-blur-sm',
+          'sticky top-0 left-0 h-fit w-full bg-rose-100/90 backdrop-blur-sm border-b shadow-lg transition-transform duration-300 z-40',
           isVisible ? 'translate-y-0' : '-translate-y-full'
         )}
-        style={{
-          backgroundColor: bgColor,
-          transform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
-          WebkitTransform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
-          backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden',
-          // ¡Quitado contain: 'paint' para que no recorte el dropdown!
-        }}
       >
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" aria-label="Ir a inicio">
+          <Link href="/">
             <Image src={Logo} alt="Logotipo de Impulso" width={50} />
           </Link>
 
@@ -143,9 +129,9 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-5">
             <div className="relative flex items-center" ref={userMenuRef}>
               <button
-                aria-label={userMenuOpen ? 'Cerrar menú de cuenta' : 'Abrir menú de cuenta'}
+                aria-label={userMenuOpen ? "Cerrar menú de cuenta" : "Abrir menú de cuenta"}
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="cursor-pointer"
+                className='cursor-pointer'
               >
                 {userMenuOpen ? (
                   <FaUser className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
@@ -161,7 +147,7 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full right-0 mt-1 w-48 bg-emerald-50 text-stone-600 rounded-md shadow-lg p-2 z-50" // <- z alto
+                    className="absolute top-full right-0 mt-1 w-48 bg-emerald-50 text-stone-600 rounded-md shadow-lg p-2"
                   >
                     {me ? (
                       <>
@@ -175,12 +161,10 @@ export default function Header() {
                         >
                           Área cliente
                         </Link>
-                        <form
-                          action={async () => {
-                            const mod = await import('@/lib/auth')
-                            await mod.signOut()
-                          }}
-                        >
+                        <form action={async () => {
+                          const mod = await import('@/lib/auth')
+                          await mod.signOut()
+                        }}>
                           <button
                             type="submit"
                             className="block w-full text-left px-2 py-1 text-sm rounded hover:bg-stone-100 cursor-pointer"
@@ -259,9 +243,6 @@ export default function Header() {
           </div>
         </div>
       </header>
-
-      {/* Sentinela para IO */}
-      <div ref={topSentinelRef} aria-hidden className="h-px w-full" />
 
       <AnimatePresence>
         {isOpen && (

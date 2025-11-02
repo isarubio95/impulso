@@ -22,14 +22,12 @@ export default function CTA({
 }: CTAProps) {
 
   const baseStyles =
-    'inline-flex w-full justify-center items-center gap-2 px-4 py-2 rounded-full shadow-sm text-sm font-bold cursor-pointer transition-colors duration-200';
+    'inline-flex w-full justify-center items-center gap-2 px-4 py-2 rounded-lg shadow-sm text-sm font-bold cursor-pointer transition-colors duration-200';
 
   const variantStyles = {
     primary:
-      // 👇 CAMBIOS AQUÍ: Añadimos más efectos al hover y un efecto al click
-      'bg-gradient-to-br from-rose-600 to-rose-800 text-white hover:from-rose-700 hover:to-rose-800 hover:shadow-md active:scale-95',
-
-    secondary: 'bg-transparent text-rose-700 ring-1 ring-inset ring-rose-700 hover:bg-rose-50',
+      'bg-gradient-to-br from-rose-600 to-rose-700 text-white hover:from-rose-700 hover:to-rose-800 hover:shadow-md active:scale-95',
+    secondary: 'bg-transparent font-medium text-stone-600 ring-1 ring-inset ring-stone-600 hover:bg-stone-200',
     destructive: 'bg-red-600 text-white hover:bg-red-700',
     success: 'bg-emerald-600 text-white hover:bg-emerald-700',
   };
