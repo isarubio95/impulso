@@ -139,7 +139,9 @@ function toDate(v?: string) {
 
 function revalidatePromos(productId: string) {
   revalidatePath('/admin/promotions');
+  // @ts-ignore
   revalidateTag('promotions');
+  // @ts-ignore
   revalidateTag(`promotion:${productId}`);
 }
 
