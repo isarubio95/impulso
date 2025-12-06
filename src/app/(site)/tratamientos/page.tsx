@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import TarjetaTratamiento from "../tratamientos/TarjetaTratamiento";
 import Presoterapia from "@/assets/img/presoterapia.png"; // placeholder por defecto
 import { absUrl } from "@/lib/abs-url";
+import PageTitle from '../components/PageTitle'
 
 export const metadata = {
   title: "Tratamientos | Impulso Estética",
@@ -30,9 +31,11 @@ export default function TratamientosPage() {
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Cabecera */}
-      <div className="max-w-4xl mx-auto text-center mb-10">
-        <h1 className="text-2xl font-semibold text-stone-800">Tratamientos</h1>
-        <p className="mt-3 text-stone-600 max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto text-center mb-10">
+        <PageTitle>
+          Tratamientos
+        </PageTitle>
+        <p className="mt-3 text-stone-600 text-sm max-w-3xl mx-auto">
           Descubre nuestros tratamientos y reserva tu cita.
         </p>
       </div>

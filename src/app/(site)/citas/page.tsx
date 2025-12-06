@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import CTA from '../components/CTA';
+import PageTitle from '../components/PageTitle'
 
 type Step = 1 | 2 | 3;
 
@@ -149,10 +150,10 @@ export default function CitasPage() {
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Título */}
-      <div className="max-w-6xl mx-auto mb-10 text-center">
-        <h1 className="text-2xl font-semibold text-stone-800 inline-block">
+      <div className="max-w-5xl mx-auto mb-10 text-center">
+        <PageTitle>
           Citas
-        </h1>
+        </PageTitle>
         <p className="mt-3 text-sm text-stone-600">
           Reserva tu próxima cita en tres pasos: elige día, hora y añade tus datos.
         </p>

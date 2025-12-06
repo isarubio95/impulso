@@ -25,9 +25,9 @@ export default function Hero() {
               sizes="(max-width: 640px) 90vw, 40vw"
             />
 
-            <div className="z-10 flex flex-col items-center gap-6">
-              <h1 className="text-5xl font-semibold text-rose-800">IMPULSO</h1>
-              <p className="text-xl font-medium text-stone-700">
+            <div className="z-10 flex flex-col items-center gap-3">
+              <h1 className="text-6xl font-medium text-rose-800">IMPULSO</h1>
+              <p className="text-xl font-medium text-stone-700 mb-3">
                 Centro de Bienestar en Logroño
               </p>
               <div className="w-fit">
@@ -43,7 +43,7 @@ export default function Hero() {
 
         {/* Imagen derecha con borde inferior */}
         <div className="order-1 sm:order-2 hidden sm:flex h-full items-center">
-          <div className="relative h-[70%] min-h-[420px] w-full flex border-b-2 border-rose-700">
+          <div className="relative h-[70%] min-h-[420px] w-full flex border-b-1 border-rose-800">
             <Image
               src={HeroImg}
               alt="Mujer sonriendo con manzana"

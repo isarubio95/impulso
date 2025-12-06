@@ -1,6 +1,7 @@
 import { FaWhatsapp, FaFacebookF, FaTwitter, FaInstagram } from 'react-icons/fa';
 import FormularioContacto from './FormularioContacto';
 import { MapPin } from 'lucide-react';
+import PageTitle from '../components/PageTitle'
 
 export const metadata = {
   title: "Contacto | Impulso Estética",
@@ -50,10 +51,10 @@ export default function ContactoPage() {
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Título */}
-      <div className="mx-auto mb-8 text-center">
-        <h1 className="text-2xl font-semibold text-stone-800 inline-block">
+      <div className="max-w-4xl mx-auto mb-8 text-center">
+        <PageTitle>
           Contacto
-        </h1>
+        </PageTitle>
         <p className="mt-2 text-sm text-stone-600">
           ¿Tienes alguna duda? Escríbenos y te responderemos lo antes posible.
           <br />También puedes visitarnos o contactarnos por redes.
@@ -67,7 +68,7 @@ export default function ContactoPage() {
         </div>
 
         <div className="w-full md:w-1/2">
-          <h3 className="flex items-center gap-2 text-sm font-medium text-stone-800 mb-2">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-stone-800 mb-2">
             <MapPin className="w-4 h-4 text-rose-600" />
             Ubicación
           </h3>

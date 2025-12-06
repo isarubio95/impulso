@@ -22,7 +22,7 @@ export default function FormularioContacto() {
           onSubmit={handleSubmit}
           className="bg-white border border-stone-200 rounded-md shadow-sm p-6 space-y-4"
         >
-          <h2 className="text-center text-md text-stone-800 mb-6">
+          <h2 className="text-center text-lg font-bold text-stone-800 mb-6">
             Formulario de contacto
           </h2>
 

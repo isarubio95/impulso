@@ -3,7 +3,7 @@ import TarjetaProducto from "./TarjetaProducto";
 import ProductPlaceholder from "@/assets/img/product.png";
 import { FiSearch } from "react-icons/fi";
 import { absUrl } from "@/lib/abs-url";
-import SectionTitle from '../components/SectionTitle'
+import PageTitle from '../components/PageTitle'
 
 
 export const metadata = {
@@ -23,19 +23,19 @@ export default function TiendaPage() {
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Título */}
-      <div className="mx-auto mb-10 text-center">
-        <SectionTitle>
+      <div className="max-w-4xl mx-auto mb-10 text-center">
+        <PageTitle>
           Nuestros productos
-        </SectionTitle>
+        </PageTitle>
+        <p className="mt-3 text-stone-600 text-sm max-w-3xl mx-auto">
+          Descubre nuestros tratamientos y reserva tu cita.
+        </p>
       </div>
 
       {/* Contenedor principal */}
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Barra de controles */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <p className="text-sm text-stone-600">
-            Descubre nuestros productos y promociones.
-          </p>
           <div className="flex flex-wrap items-center sm:justify-end gap-3">
             <select
               aria-label="Ordenar productos"
