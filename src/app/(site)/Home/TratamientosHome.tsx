@@ -7,6 +7,7 @@ import CTA from '../components/CTA'
 import presoterapia from '@/assets/img/presoterapia.png'
 import terapeuta from '@/assets/img/terapeuta.png'
 import TarjetaTratamientos from './TarjetaTratamientos'
+import SectionTitle from '../components/SectionTitle'
 
 type ApiTreatment = {
   slug: string
@@ -44,13 +45,12 @@ export default function TratamientosHome() {
 
   return (
     <section className="py-16 px-4 flex flex-col items-center gap-8 bg-white">
-      {/* Título */}
-      <h2 className="text-center text-2xl font-semibold text-stone-800 border-b border-rose-300 pb-2">
-        Nuestros Tratamientos
-      </h2>
-
+      <SectionTitle>
+        Nuestros tratamientos
+      </SectionTitle>
+      
       {/* Grid tratamientos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl w-full">
         {items === null && !error && (
           <>
             {[0, 1, 2, 3].map((i) => (
@@ -92,7 +92,7 @@ export default function TratamientosHome() {
       </Link>
 
       {/* Citas personalizadas */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 hover:shadow-md transition-shadow duration-300 max-w-3xl mt-4 bg-rose-100 rounded-xl pb-0 p-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center gap-6 hover:shadow-md transition-shadow duration-300 max-w-4xl mt-4 bg-rose-100 rounded-xl pb-0 py-6 px-10 shadow-sm">
         <Image
           src={terapeuta}
           alt="Cita personalizada"

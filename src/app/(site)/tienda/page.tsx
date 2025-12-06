@@ -3,6 +3,8 @@ import TarjetaProducto from "./TarjetaProducto";
 import ProductPlaceholder from "@/assets/img/product.png";
 import { FiSearch } from "react-icons/fi";
 import { absUrl } from "@/lib/abs-url";
+import SectionTitle from '../components/SectionTitle'
+
 
 export const metadata = {
   title: "Tienda | Impulso Estética",
@@ -22,9 +24,9 @@ export default function TiendaPage() {
     <section className="bg-stone-50 py-16 px-4">
       {/* Título */}
       <div className="mx-auto mb-10 text-center">
-        <h1 className="text-2xl font-semibold text-stone-800 inline-block">
-          Tienda
-        </h1>
+        <SectionTitle>
+          Nuestros productos
+        </SectionTitle>
       </div>
 
       {/* Contenedor principal */}
@@ -112,7 +114,7 @@ function ProductosSkeleton() {
           <div className="space-y-3">
             <div className="h-4 w-3/4 rounded bg-stone-200" />
             <div className="h-4 w-full rounded bg-stone-200" />
-            <div className="h-5 w-1/3 rounded bg-emerald-200" />
+            <div className="h-5 w-1/3 rounded bg-stone-200" />
           </div>
         </div>
       ))}

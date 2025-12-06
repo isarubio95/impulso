@@ -19,7 +19,6 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   
-  // 👇 CAMBIO: Usamos useRef para la última posición del scroll
   const lastYRef = useRef(0)
 
   const { count } = useCart();
@@ -114,15 +113,19 @@ export default function Header() {
           <nav className="hidden md:flex gap-4">
             {navItems.map((item) => (
               <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'px-3 py-1 rounded-md text-sm font-medium transition',
-                  pathname === item.href ? 'bg-rose-500 text-white' : 'text-stone-900 hover:bg-rose-200'
-                )}
-              >
-                {item.label}
-              </Link>
+  key={item.href}
+  href={item.href}
+  className={cn(
+    'px-3 py-1 rounded-md text-sm font-medium relative',
+    pathname === item.href
+      ? 'text-rose-700 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-[75%] after:h-[2px] after:bg-rose-600 after:rounded-full after:origin-left after:scale-x-100 after:transition-transform after:duration-300'
+      : 'text-stone-900 hover:text-rose-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-[90%] after:h-[2px] after:bg-rose-500 after:rounded-full after:origin-left after:scale-x-0'
+  )}
+>
+  {item.label}
+</Link>
+
+
             ))}
           </nav>
 

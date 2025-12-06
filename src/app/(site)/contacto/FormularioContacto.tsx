@@ -33,8 +33,8 @@ export default function FormularioContacto() {
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Escribe aquí tu nombre"
-              required
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white"
+              required              
+              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white shadow-inner"
             />
           </label>
 
@@ -45,8 +45,8 @@ export default function FormularioContacto() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="usuario@ejemplo.com"
-              required
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white"
+              required              
+              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white shadow-inner"
             />
           </label>
 
@@ -56,8 +56,8 @@ export default function FormularioContacto() {
               type="tel"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
-              placeholder="usuario@ejemplo.com"
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white"
+              placeholder="usuario@ejemplo.com"              
+              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white shadow-inner"
             />
           </label>
 
@@ -68,8 +68,8 @@ export default function FormularioContacto() {
               onChange={(e) => setMensaje(e.target.value)}
               placeholder="Introduce tu mensaje"
               rows={4}
-              required
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white"
+              required              
+              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-700 bg-white shadow-inner"
             />
           </label>
 

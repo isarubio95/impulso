@@ -49,7 +49,7 @@ export default function Promociones() {
   }
 
   return (
-    <section className="bg-rose-50 py-20 pl-2.5 pr-0 sm:px-2 sm:pr-2 flex flex-col items-center gap-8">
+    <section className="bg-purple-50 py-20 pl-2.5 pr-0 sm:px-2 sm:pr-2 flex flex-col items-center gap-8">
       {/* Controles y Carrusel */}
       <div className="flex justify-center items-center gap-3 w-full max-w-5xl">
         <button

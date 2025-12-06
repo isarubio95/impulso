@@ -25,16 +25,9 @@ export default function TarjetaTratamiento({
     <Link href={`/tratamientos/${slug}`} className="flex h-full">
       <div
         className={[
-          // card
-          'relative w-full flex h-full rounded-2xl shadow-sm hover:shadow-md',
-          // fondo por color
-          bgClass,
-          // padding y transición (sin transition-all)
-          'p-6 transition-transform duration-300 hover:scale-[1.01]',
-          // para que todas queden igual de altas
-          'min-h-[180px] md:min-h-[200px] lg:min-h-[220px]',
-          // layout interno
-          'flex flex-col'
+          'relative w-full flex h-full rounded-2xl shadow-sm hover:shadow-md', bgClass,
+          'py-6 px-10 transition-transform duration-300 hover:scale-[1.01]',
+          'min-h-[180px] md:min-h-[200px] lg:min-h-[220px] flex flex-col'
         ].join(' ')}
       >
         {/* Imagen decorativa de fondo */}
