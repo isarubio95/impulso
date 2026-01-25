@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import ConfirmSubmit from '../products/ConfirmSubmit'
 import { deleteTreatment, toggleTreatmentPromoted } from './actions'
 import PromoteCheckbox from './PromoteCheckbox'
+import { FiEdit, FiTrash2, FiPlus, FiSearch } from 'react-icons/fi'
 
 export const runtime = 'nodejs'
 
@@ -66,92 +67,99 @@ export default async function TreatmentsAdminPage({
   })
 
   return (
-    <section className="max-w-6xl mx-auto space-y-6 text-stone-700 px-4 py-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Tratamientos</h1>
-        <Link
-          href="/admin/treatments/new"
-          className="inline-flex px-3 py-2 rounded-md bg-emerald-600 text-white text-sm hover:bg-emerald-700"
-        >
-          Nuevo tratamiento
-        </Link>
-      </div>
+    <div className="p-8">
+      <header className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-800">Tratamientos</h1>
+          <p className="text-stone-600">Gestión del catálogo de tratamientos.</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <form className="relative">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="Buscar tratamientos..."
+              className="w-full sm:w-64 rounded-full border border-stone-300 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-stone-200 focus:border-stone-400 outline-none transition-all"
+            />
+          </form>
+          <Link
+            href="/admin/treatments/new"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-sm font-medium transition-colors shadow-sm"
+          >
+            <FiPlus className="w-4 h-4" />
+            <span>Nuevo</span>
+          </Link>
+        </div>
+      </header>
 
-      <form className="flex items-center gap-2">
-        <input
-          type="search"
-          name="q"
-          defaultValue={q}
-          placeholder="Buscar por título, slug…"
-          className="border rounded-md px-3 py-2 text-sm"
-        />
-        <button className="px-3 py-2 rounded-md border text-sm hover:bg-stone-50">
-          Buscar
-        </button>
-      </form>
-
-      <div className="overflow-x-auto border rounded-md bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="bg-stone-100 border-b">
-            <tr>
-              <th className="text-left p-3">Título</th>
-              <th className="text-left p-3">Slug</th>
-              <th className="text-left p-3">Estado</th>
-              <th className="text-left p-3">Promocionado</th>{/* 👈 nueva columna */}
-              <th className="text-left p-3">Actualizado</th>
-              <th className="text-right p-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((t) => (
-              <tr key={t.id} className="border-b align-middle">
-                <td className="p-3 font-medium">{t.title}</td>
-                <td className="p-3 text-stone-600">{t.slug}</td>
-                <td className="p-3">
-                  <StatusBadge active={t.isActive} />
-                </td>
-
-                {/* Checkbox que llama a la server action al cambiar */}
-                <td className="p-3">
-                  <PromoteCheckbox
-                    id={t.id}
-                    defaultChecked={t.promoted}
-                    action={toggleTreatmentPromoted}
-                  />
-                </td>
-
-                <td className="p-3 text-stone-500">{fmt(t.updatedAt)}</td>
-                <td className="p-3 text-right space-x-2">
-                  <Link
-                    className="inline-flex px-3 py-2 rounded-md border text-sm hover:bg-stone-50"
-                    href={`/admin/treatments/${t.id}`}
-                  >
-                    Editar
-                  </Link>
-
-                  <form action={deleteAction} className="inline">
-                    <input type="hidden" name="id" value={t.id} />
-                    <ConfirmSubmit
-                      message={`¿Eliminar "${t.title}"?`}
-                      className="px-3 py-2 rounded-md border border-rose-300 text-rose-700 hover:bg-rose-50"
-                    >
-                      Borrar
-                    </ConfirmSubmit>
-                  </form>
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
+      <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-stone-600">
+            <thead className="bg-stone-50/50 text-stone-800 font-medium border-b border-stone-200">
               <tr>
-                <td colSpan={6} className="p-6 text-center text-stone-500">
-                  No hay tratamientos todavía.
-                </td>
+                <th className="px-6 py-4 whitespace-nowrap">Título</th>
+                <th className="px-6 py-4 whitespace-nowrap">Slug</th>
+                <th className="px-6 py-4 whitespace-nowrap">Estado</th>
+                <th className="px-6 py-4 whitespace-nowrap">Promocionado</th>
+                <th className="px-6 py-4 whitespace-nowrap">Actualizado</th>
+                <th className="px-6 py-4 whitespace-nowrap text-center">Acciones</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {items.map((t) => (
+                <tr key={t.id} className="hover:bg-stone-50/80 transition-colors">
+                  <td className="px-6 py-4 font-medium text-stone-800">{t.title}</td>
+                  <td className="px-6 py-4 text-stone-500">{t.slug}</td>
+                  <td className="px-6 py-4">
+                    <StatusBadge active={t.isActive} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <PromoteCheckbox
+                      id={t.id}
+                      defaultChecked={t.promoted}
+                      action={toggleTreatmentPromoted}
+                    />
+                  </td>
+                  <td className="px-6 py-4 text-stone-500">{fmt(t.updatedAt)}</td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Link
+                        href={`/admin/treatments/${t.id}`}
+                        className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors"
+                        title="Editar tratamiento"
+                      >
+                        <FiEdit className="w-5 h-5" />
+                      </Link>
+
+                      <form action={deleteAction} className="inline-flex">
+                        <input type="hidden" name="id" value={t.id} />
+                        <ConfirmSubmit
+                          message={`¿Eliminar "${t.title}"?`}
+                          className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+                        >
+                          <FiTrash2 className="w-5 h-5" />
+                        </ConfirmSubmit>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-stone-500">
+                    No se encontraron tratamientos.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-6 py-4 border-t border-stone-100 bg-stone-50/30 text-xs text-stone-500">
+            Máximo 4 tratamientos promocionados.
+        </div>
       </div>
-      <p className="text-xs text-stone-500">Máximo 4 tratamientos promocionados.</p>
-    </section>
+    </div>
   )
 }

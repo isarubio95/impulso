@@ -93,7 +93,7 @@ export default async function ProductsPage({
               name="q"
               defaultValue={q}
               placeholder="Buscar productos..."
-              className="w-full sm:w-64 rounded-full border border-stone-300 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-stone-200 focus:border-stone-400 outline-none transition-all"
+              className="w-full sm:w-64 rounded-full border border-stone-300 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-stone-200 focus:border-stone-400 outline-none transition-all text-stone-900 placeholder:text-stone-400"
             />
           </form>
           <Link

@@ -3,6 +3,7 @@ export const runtime = 'nodejs';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { confirmAppointment, cancelAppointment, deleteAppointment } from './actions';
+import { FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 
 function fmt(dt: Date) {
   return new Date(dt).toLocaleString('es-ES', {
@@ -30,90 +31,99 @@ export default async function AppointmentsAdminPage() {
   });
 
   return (
-    <section className="max-w-6xl mx-auto space-y-6 text-stone-700 px-4 py-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Citas</h1>
-      </div>
+    <div className="p-8">
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-stone-800">Citas</h1>
+        <p className="text-stone-600">Gestión de citas programadas.</p>
+      </header>
 
-      <div className="overflow-x-auto border rounded-md bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="bg-stone-100 border-b">
-            <tr>
-              <th className="text-left p-3">Fecha</th>
-              <th className="text-left p-3">Cliente</th>
-              <th className="text-left p-3">Contacto</th>
-              <th className="text-left p-3">Estado</th>
-              <th className="text-right p-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((a) => (
-              <tr key={a.id} className="border-b align-middle">
-                <td className="p-3">
-                  <div className="font-medium">{fmt(a.startsAt)}</div>
-                  {a.endsAt && (
-                    <div className="text-xs text-stone-500">hasta {fmt(a.endsAt)}</div>
-                  )}
-                </td>
-                <td className="p-3">
-                  <div className="font-medium">{a.fullName}</div>
-                  {a.notes && <div className="text-xs text-stone-500 mt-1">{a.notes}</div>}
-                </td>
-                <td className="p-3">
-                  <div>{a.phone}</div>
-                  {a.email && <div className="text-xs text-stone-500">{a.email}</div>}
-                </td>
-                <td className="p-3"><StatusBadge s={a.status} /></td>
-                <td className="p-3 text-right space-x-2">
-                  <Link
-                    href={`/admin/appointments/${a.id}`}
-                    className="inline-flex px-3 py-2 rounded-md border text-sm hover:bg-stone-50"
-                  >
-                    Editar
-                  </Link>
-
-                  {a.status !== 'confirmed' && (
-                    <form action={confirmAppointment.bind(null, a.id)} className="inline">
-                      <button
-                        type="submit"
-                        className="inline-flex px-3 py-2 rounded-md bg-emerald-600 text-white text-sm hover:bg-emerald-700 cursor-pointer"
-                      >
-                        Confirmar
-                      </button>
-                    </form>
-                  )}
-
-                  {a.status !== 'cancelled' && (
-                    <form action={cancelAppointment.bind(null, a.id)} className="inline">
-                      <button
-                        type="submit"
-                        className="inline-flex px-3 py-2 rounded-md border border-rose-300 text-rose-700 hover:bg-rose-50 text-sm cursor-pointer"
-                      >
-                        Rechazar
-                      </button>
-                    </form>
-                  )}
-
-                  <form action={deleteAppointment.bind(null, a.id)} className="inline">
-                    <button
-                      type="submit"
-                      className="inline-flex px-3 py-2 rounded-md border text-sm hover:bg-stone-50 cursor-pointer"
-                    >
-                      Borrar
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-
-            {items.length === 0 && (
+      <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-stone-600">
+            <thead className="bg-stone-50/50 text-stone-800 font-medium border-b border-stone-200">
               <tr>
-                <td colSpan={5} className="p-6 text-center text-stone-500">No hay citas.</td>
+                <th className="px-6 py-4 whitespace-nowrap">Fecha</th>
+                <th className="px-6 py-4 whitespace-nowrap">Cliente</th>
+                <th className="px-6 py-4 whitespace-nowrap">Contacto</th>
+                <th className="px-6 py-4 whitespace-nowrap">Estado</th>
+                <th className="px-6 py-4 whitespace-nowrap text-center">Acciones</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {items.map((a) => (
+                <tr key={a.id} className="hover:bg-stone-50/80 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-stone-800">{fmt(a.startsAt)}</div>
+                    {a.endsAt && (
+                      <div className="text-xs text-stone-500">hasta {fmt(a.endsAt)}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-stone-800">{a.fullName}</div>
+                    {a.notes && <div className="text-xs text-stone-500 mt-1 line-clamp-1">{a.notes}</div>}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-stone-800">{a.phone}</div>
+                    {a.email && <div className="text-xs text-stone-500">{a.email}</div>}
+                  </td>
+                  <td className="px-6 py-4"><StatusBadge s={a.status} /></td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Link
+                        href={`/admin/appointments/${a.id}`}
+                        className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors"
+                        title="Editar cita"
+                      >
+                        <FiEdit className="w-5 h-5" />
+                      </Link>
+
+                      {a.status !== 'confirmed' && (
+                        <form action={confirmAppointment.bind(null, a.id)} className="inline-flex">
+                          <button
+                            type="submit"
+                            className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors cursor-pointer"
+                            title="Confirmar cita"
+                          >
+                            <FiCheck className="w-5 h-5" />
+                          </button>
+                        </form>
+                      )}
+
+                      {a.status !== 'cancelled' && (
+                        <form action={cancelAppointment.bind(null, a.id)} className="inline-flex">
+                          <button
+                            type="submit"
+                            className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors cursor-pointer"
+                            title="Rechazar cita"
+                          >
+                            <FiX className="w-5 h-5" />
+                          </button>
+                        </form>
+                      )}
+
+                      <form action={deleteAppointment.bind(null, a.id)} className="inline-flex">
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
+                          title="Eliminar cita"
+                        >
+                          <FiTrash2 className="w-5 h-5" />
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-stone-500">No hay citas programadas.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -118,7 +118,7 @@ export default function CitasPage() {
   }
 
   async function handleConfirm(
-  e?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  e?: React.FormEvent<HTMLFormElement> | React.MouseEvent
   ) {
     e?.preventDefault();
     if (!canConfirm || !selectedISO) return;
