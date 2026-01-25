@@ -42,7 +42,7 @@ export default function OpinionesClientes() {
   return (
     <section className="bg-stone-100 py-20 pl-2.5 pr-0 sm:px-2 sm:pr-2 lg:px-30 flex flex-col items-center gap-8">
       <SectionTitle>
-        Opniones de nuestros clientes
+        Opiniones de nuestros clientes
       </SectionTitle>
 
       {/* Carrusel con controles */}
