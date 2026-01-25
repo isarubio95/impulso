@@ -76,11 +76,6 @@ export default function CheckoutClient({
 
   return (
     <section className="bg-stone-200 min-h-screen py-10 px-6 space-y-6">
-      <h1 className="text-3xl text-center font-bold tracking-tight text-stone-900">Finalizar Compra</h1>
-        <p className="mt-2 text-center text-stone-600">
-          Revisa tus datos de envío y completa el pago de forma segura.
-        </p>
-
       {/* Dirección */}
       <div className="bg-stone-100 shadow-softer text-stone-800 max-w-2xl mx-auto rounded-lg p-4">
         <p className="text-xl font-semibold mb-4">Dirección de envío</p>
