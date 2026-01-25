@@ -1,33 +1,9 @@
 export const runtime = 'nodejs';
 
 import { prisma } from '@/lib/db';
-import { OrderStatus } from '@prisma/client';
 import Link from 'next/link';
-import { revalidatePath } from 'next/cache';
-import { FiEye, FiCheck, FiTrash2 } from 'react-icons/fi';
-
-async function confirmOrder(formData: FormData) {
-  'use server';
-  const id = formData.get('id');
-  if (id) {
-    await prisma.order.update({
-      where: { id: String(id) },
-      data: { status: 'COMPLETED' as OrderStatus },
-    });
-    revalidatePath('/admin/orders');
-  }
-}
-
-async function deleteOrder(formData: FormData) {
-  'use server';
-  const id = formData.get('id');
-  if (id) {
-    await prisma.order.delete({
-      where: { id: String(id) },
-    });
-    revalidatePath('/admin/orders');
-  }
-}
+import { FiEye } from 'react-icons/fi';
+import { ConfirmOrderButton, DeleteOrderButton } from './OrderActions';
 
 export default async function AdminOrdersPage() {
   // Obtener pedidos ordenados por fecha descendente
@@ -117,33 +93,14 @@ export default async function AdminOrdersPage() {
                         <div className="flex items-center justify-center gap-2">
                           <Link
                             href={`/admin/orders/${orderId}`}
-                            className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors"
+                            className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-colors cursor-pointer"
                             title="Ver detalles"
                           >
                             <FiEye className="w-5 h-5" />
                           </Link>
 
-                          <form action={confirmOrder}>
-                            <input type="hidden" name="id" value={orderId} />
-                            <button
-                              type="submit"
-                              className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors"
-                              title="Confirmar pedido"
-                            >
-                              <FiCheck className="w-5 h-5" />
-                            </button>
-                          </form>
-
-                          <form action={deleteOrder}>
-                            <input type="hidden" name="id" value={orderId} />
-                            <button
-                              type="submit"
-                              className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors"
-                              title="Eliminar pedido"
-                            >
-                              <FiTrash2 className="w-5 h-5" />
-                            </button>
-                          </form>
+                          <ConfirmOrderButton id={orderId} />
+                          <DeleteOrderButton id={orderId} />
                         </div>
                       </td>
                     </tr>
