@@ -38,7 +38,7 @@ export default async function LoginPage({
                   type="email"
                   autoComplete="email"
                   required
-                  className="block w-full rounded-md border-stone-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm px-3 py-2 border outline-none transition-colors placeholder:text-stone-400"
+                  className="block w-full rounded-md border-stone-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm px-3 py-2 border outline-none transition-colors placeholder:text-stone-400 text-stone-900"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -55,7 +55,7 @@ export default async function LoginPage({
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="block w-full rounded-md border-stone-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm px-3 py-2 border outline-none transition-colors placeholder:text-stone-400"
+                  className="block w-full rounded-md border-stone-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm px-3 py-2 border outline-none transition-colors placeholder:text-stone-400 text-stone-900"
                   placeholder="••••••••"
                 />
               </div>
