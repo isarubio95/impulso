@@ -48,6 +48,7 @@ export default function Header() {
     const handler = (e: any) => {
       const { x, y } = e.detail;
       setFlyingItems(prev => [...prev, { id: Date.now(), startX: x, startY: y }]);
+      setIsVisible(true); // Mostrar el header si estaba oculto
     };
     window.addEventListener('cart-add-anim', handler);
     return () => window.removeEventListener('cart-add-anim', handler);
@@ -350,7 +351,13 @@ export default function Header() {
           const targetRect = (desktopRect && desktopRect.width > 0) ? desktopRect : mobileRect;
           
           const targetX = targetRect ? targetRect.left + targetRect.width / 2 - 10 : 0;
-          const targetY = targetRect ? targetRect.top + targetRect.height / 2 - 10 : 0;
+          let targetY = targetRect ? targetRect.top + targetRect.height / 2 - 10 : 0;
+
+          // Si el header estaba oculto (transformado hacia arriba), targetY será negativo.
+          // Lo ajustamos manualmente para que vuele a la zona visible (aprox 28px desde arriba).
+          if (targetY < 0) {
+            targetY = 28;
+          }
 
           return (
             <motion.div
