@@ -36,7 +36,14 @@ export default async function CheckoutPage() {
       include: {
         items: {
           include: {
-            product: { select: { id: true, price: true } }, // solo lo necesario
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                imageUrl: true,
+              },
+            },
           },
         },
       },
@@ -49,12 +56,34 @@ export default async function CheckoutPage() {
   const defaultAddressId =
     addresses.find(a => a.isDefault)?.id ?? addresses[0]?.id ?? ''
 
+  // Serializar los objetos Decimal de Prisma a number para el componente cliente
+  const items =
+    cart?.items.map(item => ({
+      ...item,
+      product: {
+        ...item.product,
+        price: Number(item.product.price),
+      },
+    })) ?? []
+
   return (
-    <CheckoutClient
-      addresses={addresses}
-      defaultAddressId={defaultAddressId}
-      subtotalCents={subtotalCents}
-      hasItems={(cart?.items?.length ?? 0) > 0}
-    />
+    <section className="bg-stone-50 min-h-[calc(100vh-4rem)] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-10 text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-stone-900">Finalizar Compra</h1>
+          <p className="mt-2 text-stone-600">
+            Revisa tus datos de envío y completa el pago de forma segura.
+          </p>
+        </header>
+
+        <CheckoutClient
+          addresses={addresses}
+          defaultAddressId={defaultAddressId}
+          subtotalCents={subtotalCents}
+          hasItems={(cart?.items?.length ?? 0) > 0}
+          items={items}
+        />
+      </div>
+    </section>
   )
 }

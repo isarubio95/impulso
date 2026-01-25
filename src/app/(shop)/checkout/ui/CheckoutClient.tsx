@@ -5,6 +5,8 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import AddressQuickForm from './AddressQuickForm'
 import { beginPayment } from '../actions'
+import Image from 'next/image'
+import { formatEUR } from '@/lib/cart/money'
 
 const PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
@@ -21,11 +23,23 @@ type Address = {
   isDefault: boolean
 }
 
+type Item = {
+  id: string
+  quantity: number
+  product: {
+    id: string
+    name: string
+    price: number
+    imageUrl: string | null
+  }
+}
+
 type Props = {
   addresses: Address[]
   defaultAddressId: string
   subtotalCents: number
   hasItems: boolean
+  items: Item[]
 }
 
 export default function CheckoutClient({
@@ -33,10 +47,13 @@ export default function CheckoutClient({
   defaultAddressId,
   subtotalCents,
   hasItems,
+  items,
 }: Props) {
   const [addressId, setAddressId] = useState(defaultAddressId)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [pending, start] = useTransition()
+
+  const selectedAddress = addresses.find(a => a.id === addressId)
 
   const stripePromise = useMemo(() => {
     if (typeof window === 'undefined') return null
@@ -62,34 +79,90 @@ export default function CheckoutClient({
 
       {/* Dirección */}
       <div className="bg-stone-100 shadow-softer text-stone-800 max-w-2xl mx-auto rounded-lg p-4">
-        <p className="text-xl font-semibold mb-2">Dirección de envío</p>
+        <p className="text-xl font-semibold mb-4">Dirección de envío</p>
 
         {addresses.length > 0 ? (
-          <div className="space-y-2">
-            <label className="text-sm mr-2 opacity-80">Usar dirección:</label>
-            <select
-              className="ring ring-black/50 focus:ring-1 shadow-inner rounded-md px-3 py-2 text-sm"
-              value={addressId}
-              onChange={(e) => setAddressId(e.target.value)}
-            >
-              {addresses.map(a => (
-                <option key={a.id} value={a.id}>
-                  {a.fullName} — {a.city}
-                </option>
-              ))}
-            </select>
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Seleccionar dirección guardada</label>
+              <select
+                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                value={addressId}
+                onChange={(e) => setAddressId(e.target.value)}
+              >
+                {addresses.map(a => (
+                  <option key={a.id} value={a.id}>
+                    {a.fullName} — {a.line1}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedAddress && (
+              <div className="rounded-md border border-stone-200 bg-white p-4 text-sm text-stone-600 shadow-sm">
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-stone-900">{selectedAddress.fullName}</span>
+                  <span>{selectedAddress.line1}</span>
+                  {selectedAddress.line2 && <span>{selectedAddress.line2}</span>}
+                  <span>{selectedAddress.postalCode} {selectedAddress.city}, {selectedAddress.province}</span>
+                  <span>{selectedAddress.country}</span>
+                  {selectedAddress.phone && <span className="text-stone-500 mt-1">Tel: {selectedAddress.phone}</span>}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <p className="opacity-60 mb-3">Añade una dirección en tu perfil o desde aquí mismo.</p>
         )}
 
-        <AddressQuickForm />
+        <div className="border-t border-stone-200">
+          <AddressQuickForm />
+        </div>
       </div>
 
       {/* Resumen */}
       <div className="bg-stone-100 shadow-softer text-stone-800 max-w-2xl mx-auto rounded-lg p-4">
-        <h2 className="text-xl font-semibold mb-2">Resumen</h2>
-        <span>Subtotal: </span><span className='text-green-800 font-semibold'>{(subtotalCents / 100).toFixed(2)} €</span>
+        <h2 className="text-xl font-semibold mb-4">Resumen</h2>
+        
+        <ul className="space-y-4 mb-4 border-b border-stone-200 pb-4">
+          {items.map((item) => (
+            <li key={item.id} className="flex gap-4">
+              <div className="relative w-16 h-16 bg-stone-200 rounded-md overflow-hidden flex-shrink-0 border border-stone-300">
+                {item.product.imageUrl ? (
+                  <Image
+                    src={item.product.imageUrl}
+                    alt={item.product.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-stone-500">
+                    Sin img
+                  </div>
+                )}
+                <span className="absolute top-0 right-0 bg-stone-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-md">
+                  x{item.quantity}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-stone-800 line-clamp-2">
+                  {item.product.name}
+                </p>
+                <p className="text-sm text-stone-500">
+                  {formatEUR(item.product.price)}
+                </p>
+              </div>
+              <div className="text-sm font-semibold text-stone-800">
+                {formatEUR(item.product.price * item.quantity)}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex justify-between items-center">
+          <span>Subtotal</span>
+          <span className='text-green-800 font-semibold'>{formatEUR(subtotalCents / 100)}</span>
+        </div>
         {!hasItems && <p className="text-sm opacity-70 mt-2">Tu carrito está vacío.</p>}
       </div>
 
