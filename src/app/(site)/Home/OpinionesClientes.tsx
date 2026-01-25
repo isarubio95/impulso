@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import OpinionCliente from './OpinionCliente'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import SectionTitle from '../components/SectionTitle'
 
 const opiniones = [
   { id: 1, nombre: 'Noelia Pinillos Ortiz', texto: 'El trato ha sido excelente desde el primer momento. Muy recomendable, volveré sin duda.' },
@@ -40,9 +41,9 @@ export default function OpinionesClientes() {
 
   return (
     <section className="bg-stone-100 py-20 pl-2.5 pr-0 sm:px-2 sm:pr-2 lg:px-30 flex flex-col items-center gap-8">
-      <h2 className="text-2xl pl-2 pr-2.5 text-center font-semibold text-stone-800 border-b border-rose-300 pb-2">
-        Opiniones de nuestros clientes
-      </h2>
+      <SectionTitle>
+        Opniones de nuestros clientes
+      </SectionTitle>
 
       {/* Carrusel con controles */}
       <div className="flex justify-center items-center gap-2 sm:gap-4 w-full max-w-5xl">
