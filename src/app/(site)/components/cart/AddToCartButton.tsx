@@ -2,9 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import { useCart } from './CartProvider';
-import { cn } from '@/lib/utils';
 import { FaShoppingCart } from 'react-icons/fa';
 import CTA from '../CTA';
+import { triggerCartAnimation } from '../SiteHeader';
 
 type Props = {
   id: string;
@@ -33,7 +33,8 @@ export default function AddToCartButton({
   const dec = useCallback(() => setCount(q => Math.max(1, q - 1)), []);
   const inc = useCallback(() => setCount(q => Math.min(maxQty, q + 1)), [maxQty]);
 
-  const add = () => {
+  const add = (e: React.MouseEvent) => {
+    triggerCartAnimation(e);
     dispatch({
       type: 'ADD',
       payload: { id, name, price, image, variant, qty: count },

@@ -14,6 +14,14 @@ import { cn } from '@/lib/utils'
 
 type Me = { id: string; name: string | null; email: string; role: 'user' | 'admin' } | null;
 
+export const triggerCartAnimation = (e: React.MouseEvent) => {
+  const btn = e.currentTarget as HTMLElement;
+  const rect = btn.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  window.dispatchEvent(new CustomEvent('cart-add-anim', { detail: { x, y } }));
+};
+
 export default function Header() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -23,6 +31,34 @@ export default function Header() {
 
   const { count } = useCart();
   const { openCart } = useCartUI();
+  
+  const cartBtnRef = useRef<HTMLButtonElement>(null);
+  const mobileCartBtnRef = useRef<HTMLButtonElement>(null);
+  const [flyingItems, setFlyingItems] = useState<{id: number, startX: number, startY: number}[]>([]);
+  const [displayCount, setDisplayCount] = useState(count);
+  const [cartIsBumping, setCartIsBumping] = useState(false);
+
+  useEffect(() => {
+    if (flyingItems.length === 0) {
+      setDisplayCount(count);
+    }
+  }, [count, flyingItems.length]);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { x, y } = e.detail;
+      setFlyingItems(prev => [...prev, { id: Date.now(), startX: x, startY: y }]);
+    };
+    window.addEventListener('cart-add-anim', handler);
+    return () => window.removeEventListener('cart-add-anim', handler);
+  }, []);
+
+  useEffect(() => {
+    if (cartIsBumping) {
+      const timeout = setTimeout(() => setCartIsBumping(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [cartIsBumping]);
 
   const [me, setMe] = useState<Me | undefined>(undefined);
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -189,49 +225,63 @@ export default function Header() {
             </div>
 
             <button
+              ref={cartBtnRef}
               type="button"
               aria-label="Abrir carrito"
               aria-controls="cart-drawer"
               onClick={() => openCart()}
               className="relative flex items-center cursor-pointer"
             >
-              {count > 0 ? (
-                <FaShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
-              ) : (
-                <FiShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
-              )}
-              {count > 0 && (
+              <motion.div
+                animate={cartIsBumping ? { scale: [1, 1.2, 0.9, 1.1, 1] } : {}}
+                transition={{ duration: 0.4 }}
+                className="relative flex items-center"
+              >
+                {displayCount > 0 ? (
+                  <FaShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                ) : (
+                  <FiShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                )}
+                {displayCount > 0 && (
                 <span
-                  aria-label={`${count} artículos en el carrito`}
+                  aria-label={`${displayCount} artículos en el carrito`}
                   className="absolute -top-2 -right-3 text-xs bg-green-600 font-semibold text-white rounded-full px-1.5 py-0.5"
                 >
-                  {count}
+                  {displayCount}
                 </span>
               )}
+              </motion.div>
             </button>
           </div>
 
           <div className="md:hidden flex items-center gap-5">
             <button
+              ref={mobileCartBtnRef}
               type="button"
               aria-label="Abrir carrito"
               aria-controls="cart-drawer"
               onClick={() => openCart()}
               className="relative inline-block cursor-pointer"
             >
-              {count > 0 ? (
-                <FaShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
-              ) : (
-                <FiShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
-              )}
-              {count > 0 && (
+              <motion.div
+                animate={cartIsBumping ? { scale: [1, 1.2, 0.9, 1.1, 1] } : {}}
+                transition={{ duration: 0.4 }}
+                className="relative inline-block"
+              >
+                {displayCount > 0 ? (
+                  <FaShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+                ) : (
+                  <FiShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+                )}
+                {displayCount > 0 && (
                 <span
-                  aria-label={`${count} artículos en el carrito`}
+                  aria-label={`${displayCount} artículos en el carrito`}
                   className="absolute -top-2 -right-3 text-xs bg-green-600 font-semibold text-white rounded-full px-1.5 py-0.5"
                 >
-                  {count}
+                  {displayCount}
                 </span>
               )}
+              </motion.div>
             </button>
 
             <button
@@ -291,6 +341,34 @@ export default function Header() {
             </motion.nav>
           </>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {flyingItems.map((item) => {
+          const desktopRect = cartBtnRef.current?.getBoundingClientRect();
+          const mobileRect = mobileCartBtnRef.current?.getBoundingClientRect();
+          const targetRect = (desktopRect && desktopRect.width > 0) ? desktopRect : mobileRect;
+          
+          const targetX = targetRect ? targetRect.left + targetRect.width / 2 - 10 : 0;
+          const targetY = targetRect ? targetRect.top + targetRect.height / 2 - 10 : 0;
+
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 1, x: item.startX - 10, y: item.startY - 10, scale: 1 }}
+              animate={{ x: targetX, y: targetY, scale: 0.5, opacity: 0.5 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              style={{ position: 'fixed', zIndex: 9999, pointerEvents: 'none' }}
+              className="w-5 h-5 bg-rose-600 rounded-full shadow-md border-2 border-white"
+              onAnimationComplete={() => {
+                setFlyingItems(prev => prev.filter(i => i.id !== item.id));
+                setDisplayCount(prev => prev + 1);
+                setCartIsBumping(true);
+              }}
+            />
+          );
+        })}
       </AnimatePresence>
     </>
   )

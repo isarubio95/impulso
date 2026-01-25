@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 type CTAProps = {
   texto: string;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   href?: string;
   icono?: React.ReactNode;
   disabled?: boolean;
