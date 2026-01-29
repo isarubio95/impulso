@@ -30,6 +30,8 @@ export default async function AdminOrdersPage() {
                 <th className="px-6 py-4 whitespace-nowrap">Fecha</th>
                 <th className="px-6 py-4 whitespace-nowrap">Email</th>
                 <th className="px-6 py-4 whitespace-nowrap">Estado</th>
+                <th className="px-6 py-4 whitespace-nowrap text-right">Subtotal</th>
+                <th className="px-6 py-4 whitespace-nowrap text-right">Envío</th>
                 <th className="px-6 py-4 whitespace-nowrap text-right">Total</th>
                 <th className="px-6 py-4 whitespace-nowrap text-center">Acciones</th>
               </tr>
@@ -37,7 +39,7 @@ export default async function AdminOrdersPage() {
             <tbody className="divide-y divide-stone-100">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-stone-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-stone-500">
                     No hay pedidos registrados todavía.
                   </td>
                 </tr>
@@ -45,6 +47,8 @@ export default async function AdminOrdersPage() {
                 orders.map((order) => {
                   const orderId = String(order.id);
                   const date = new Date(order.createdAt);
+                  const subtotal = order.subtotalCents / 100;
+                  const shipping = order.shippingCents / 100;
                   const total = (order.subtotalCents + order.shippingCents + order.taxCents) / 100;
 
                   // Mapeo simple de estados para visualización
@@ -85,6 +89,12 @@ export default async function AdminOrdersPage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>
                           {label}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-right text-stone-600">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(subtotal)}
+                      </td>
+                      <td className="px-6 py-4 text-right text-stone-600">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(shipping)}
                       </td>
                       <td className="px-6 py-4 text-right font-medium text-stone-800">
                         {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(total)}
