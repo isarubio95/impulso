@@ -11,7 +11,8 @@ const CURRENCY = 'EUR'
 // Calculadora (puedes refinar reglas de envío/IVA)
 function calcShipping(subtotalCents: number) {
   // Envío fijo 4.90€ si < 35€, gratis >= 35€
-  return subtotalCents >= 3500 ? 0 : 490
+  // return subtotalCents >= 3500 ? 0 : 490
+  return 0; // Gastos de envío gratis temporalmente para pruebas
 }
 function calcTax(subtotalCents: number) {
   // IVA 21% incluido en precios: si ya son PVP con IVA, puedes poner 0.
