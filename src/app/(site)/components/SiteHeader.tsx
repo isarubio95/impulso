@@ -163,17 +163,17 @@ export default function Header() {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-6">
             <div className="relative flex items-center" ref={userMenuRef}>
               <button
                 aria-label={userMenuOpen ? "Cerrar menú de cuenta" : "Abrir menú de cuenta"}
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className='cursor-pointer'
+                className='cursor-pointer hover:bg-stone-200 p-2 rounded-full transition-colors duration-300'
               >
                 {userMenuOpen ? (
-                  <FaUser className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                  <FaUser className="w-5.5 h-auto text-stone-700 hover:text-stone-800 transition" />
                 ) : (
-                  <FaRegUser className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                  <FaRegUser className="w-5.5 h-auto text-stone-700 hover:text-stone-800 transition" />
                 )}
               </button>
 
@@ -230,7 +230,7 @@ export default function Header() {
               aria-label="Abrir carrito"
               aria-controls="cart-drawer"
               onClick={() => openCart()}
-              className="relative flex items-center justify-center cursor-pointer"
+              className="relative cursor-pointer hover:bg-stone-200 p-2 rounded-full transition-colors duration-300"
             >
               <motion.div
                 animate={cartIsBumping ? { scale: [1, 1.25, 1] } : {}}
