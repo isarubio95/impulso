@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import TarjetaProducto from "./TarjetaProducto";
 import ProductPlaceholder from "@/assets/img/product.png";
-import { FiSearch } from "react-icons/fi";
 import { absUrl } from "@/lib/abs-url";
 import PageTitle from '../components/PageTitle'
+import TiendaControls from "./TiendaControls";
 
 
 export const metadata = {
@@ -19,7 +19,13 @@ type ApiProduct = {
   imageUrl?: string | null;
 };
 
-export default function TiendaPage() {
+export default async function TiendaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; sort?: string }>;
+}) {
+  const { q, sort } = await searchParams;
+
   return (
     <section className="bg-stone-50 py-16 px-4">
       {/* Título */}
@@ -35,46 +41,47 @@ export default function TiendaPage() {
       {/* Contenedor principal */}
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Barra de controles */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center sm:justify-end gap-3">
-            <select
-              aria-label="Ordenar productos"
-              className="border w-full sm:w-fit rounded-md px-3 h-9 py-2 text-sm text-stone-700 bg-white"
-              defaultValue="featured"
-            >
-              <option value="featured">Destacados</option>
-              <option value="price-asc">Precio: menor a mayor</option>
-              <option value="price-desc">Precio: mayor a menor</option>
-            </select>
-            <div className="relative w-full sm:w-fit">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
-              <input
-                type="search"
-                placeholder="Buscar…"
-                className="pl-9 border w-full rounded-md px-3 py-2 text-sm text-stone-700 bg-white"
-              />
-            </div>
-          </div>
-        </div>
+        <TiendaControls />
 
-        <Suspense fallback={<ProductosSkeleton />}>
+        <Suspense key={`${q}-${sort}`} fallback={<ProductosSkeleton />}>
           {/* Grid para las tarjetas de producto */}
-          <ProductosGrid />
+          <ProductosGrid q={q} sort={sort} />
         </Suspense>
       </div>
     </section>
   );
 }
 
-async function ProductosGrid() {
+async function ProductosGrid({ q, sort }: { q?: string; sort?: string }) {
   const url = await absUrl("/api/products");
   const res = await fetch(url, { cache: "no-store" });
-  const { items } = (await res.json()) as { items: ApiProduct[] };
+  let { items } = (await res.json()) as { items: ApiProduct[] };
 
-  if (!items || items.length === 0) {
+  if (!items) items = [];
+
+  // 1. Filtrado por búsqueda (nombre o descripción)
+  if (q) {
+    const query = q.toLowerCase();
+    items = items.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.desc.toLowerCase().includes(query)
+    );
+  }
+
+  // 2. Ordenación
+  if (sort === "price-asc") {
+    items.sort((a, b) => Number(a.price) - Number(b.price));
+  } else if (sort === "price-desc") {
+    items.sort((a, b) => Number(b.price) - Number(a.price));
+  }
+
+  if (items.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto text-center text-stone-600">
-        No hay productos disponibles por el momento.
+      <div className="max-w-4xl mx-auto text-center text-stone-600 py-10">
+        {q 
+          ? `No se han encontrado productos que coincidan con "${q}"` 
+          : "No hay productos disponibles por el momento."}
       </div>
     );
   }
