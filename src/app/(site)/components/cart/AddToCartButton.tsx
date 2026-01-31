@@ -34,6 +34,8 @@ export default function AddToCartButton({
   const inc = useCallback(() => setCount(q => Math.min(maxQty, q + 1)), [maxQty]);
 
   const add = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     triggerCartAnimation(e);
     dispatch({
       type: 'ADD',

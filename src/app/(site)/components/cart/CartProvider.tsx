@@ -22,10 +22,9 @@ export default function CartProvider({ children }: { children: React.ReactNode }
   // hidrata desde localStorage solo en cliente
   useEffect(() => {
     const stored = loadCart<CartState>(initialCart);
-    dispatch({ type: 'CLEAR' }); // resetea, luego añade lo cargado
-    stored.items.forEach(i => {
-      dispatch({ type: 'ADD', payload: { ...i } });
-    });
+    if (stored.items.length > 0) {
+      dispatch({ type: 'SET_CART', payload: stored } as unknown as CartAction);
+    }
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

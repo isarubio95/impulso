@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, use } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import Logo from '@/assets/img/logo.png'
-import { useCart } from '@/app/(site)/components/cart/CartProvider';
-import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider';
+import { useCart } from '@/app/(site)/components/cart/CartProvider'
+import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider'
 import { FaBars, FaShoppingCart, FaRegUser, FaUser, FaTimes } from 'react-icons/fa'
 import { FiShoppingCart } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -79,7 +79,6 @@ export default function Header() {
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  // 👇 CAMBIO: useEffect mejorado para manejar el scroll
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY
@@ -231,17 +230,17 @@ export default function Header() {
               aria-label="Abrir carrito"
               aria-controls="cart-drawer"
               onClick={() => openCart()}
-              className="relative flex items-center cursor-pointer"
+              className="relative flex items-center justify-center cursor-pointer"
             >
               <motion.div
-                animate={cartIsBumping ? { scale: [1, 1.2, 0.9, 1.1, 1] } : {}}
+                animate={cartIsBumping ? { scale: [1, 1.25, 1] } : {}}
                 transition={{ duration: 0.4 }}
-                className="relative flex items-center"
+                className="relative flex items-center justify-center"
               >
                 {displayCount > 0 ? (
-                  <FaShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                  <FaShoppingCart className="w-5.5 h-auto text-stone-800 hover:text-stone-900 transition" />
                 ) : (
-                  <FiShoppingCart className="w-4.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                  <FiShoppingCart className="w-6 h-auto text-stone-800 hover:text-stone-900 transition" />
                 )}
                 {displayCount > 0 && (
                 <span
@@ -255,14 +254,14 @@ export default function Header() {
             </button>
           </div>
 
-          <div className="md:hidden flex items-center gap-5">
+          <div className="md:hidden flex items-center gap-7">
             <button
               ref={mobileCartBtnRef}
               type="button"
               aria-label="Abrir carrito"
               aria-controls="cart-drawer"
               onClick={() => openCart()}
-              className="relative inline-block cursor-pointer"
+              className="relative flex items-center justify-center cursor-pointer"
             >
               <motion.div
                 animate={cartIsBumping ? { scale: [1, 1.2, 0.9, 1.1, 1] } : {}}
@@ -270,9 +269,9 @@ export default function Header() {
                 className="relative inline-block"
               >
                 {displayCount > 0 ? (
-                  <FaShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+                  <FaShoppingCart className="w-6 h-6 text-stone-800 hover:text-stone-900 transition" />
                 ) : (
-                  <FiShoppingCart className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+                  <FiShoppingCart className="w-6 h-6 text-stone-800 hover:text-stone-900 transition" />
                 )}
                 {displayCount > 0 && (
                 <span
@@ -290,7 +289,7 @@ export default function Header() {
               onClick={() => setIsOpen(true)}
               aria-label="Abrir menú"
             >
-              <FaBars className="w-5 h-5" />
+              <FaBars className="w-6 h-6 text-stone-700 hover:text-stone-800 transition" />
             </button>
           </div>
         </div>
@@ -336,7 +335,7 @@ export default function Header() {
 
               <div className="mt-6">
                 <Link href={me ? '/cuenta' : '/login'} aria-label="Cuenta" onClick={() => setIsOpen(false)}>
-                  <FaUser className="w-5 h-5 text-stone-700 hover:text-stone-800 transition" />
+                  <FaUser className="w-6 text-stone-700 hover:text-stone-800 transition" />
                 </Link>
               </div>
             </motion.nav>
@@ -370,7 +369,7 @@ export default function Header() {
               className="w-5 h-5 bg-rose-600 rounded-full shadow-md border-2 border-white"
               onAnimationComplete={() => {
                 setFlyingItems(prev => prev.filter(i => i.id !== item.id));
-                setDisplayCount(prev => prev + 1);
+                // Eliminado el incremento manual para evitar doble conteo
                 setCartIsBumping(true);
               }}
             />
