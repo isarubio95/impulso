@@ -9,13 +9,14 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD': {
       const { id, variant, qty = 1, ...rest } = action.payload;
+      const quantity = Number(qty) || 1; // Asegurar que es número
       const idx = findIndex(state.items, id, variant);
       if (idx >= 0) {
         const items = [...state.items];
-        items[idx] = { ...items[idx], qty: items[idx].qty + qty };
+        items[idx] = { ...items[idx], qty: items[idx].qty + quantity };
         return { items };
       }
-      return { items: [...state.items, { id, variant, qty, ...rest }] };
+      return { items: [...state.items, { id, variant, qty: quantity, ...rest }] };
     }
     case 'INC': {
       const idx = findIndex(state.items, action.payload.id, action.payload.variant);
