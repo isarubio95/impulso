@@ -5,10 +5,10 @@ import HeroImg from '@/assets/img/hero-image.png'
 import LogoHero from '@/assets/img/logo-hero.png'
 import CTA from '../components/CTA'
 import { FaShoppingBag } from 'react-icons/fa'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 
 export default function Hero() {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -19,7 +19,7 @@ export default function Hero() {
     },
   }
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
     visible: {
       opacity: 1,
@@ -29,7 +29,7 @@ export default function Hero() {
     },
   }
 
-  const imageVariants = {
+  const imageVariants: Variants = {
     hidden: { opacity: 0, scale: 0.9, x: 40 },
     visible: {
       opacity: 1,

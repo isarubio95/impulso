@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, use } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,7 +9,7 @@ import { useCart } from '@/app/(site)/components/cart/CartProvider'
 import { useCartUI } from '@/app/(site)/components/cart/CartUIProvider'
 import { FaBars, FaShoppingCart, FaRegUser, FaUser, FaTimes } from 'react-icons/fa'
 import { FiShoppingCart } from 'react-icons/fi'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 type Me = { id: string; name: string | null; email: string; role: 'user' | 'admin' } | null;
@@ -48,7 +48,7 @@ export default function Header() {
     const handler = (e: any) => {
       const { x, y } = e.detail;
       setFlyingItems(prev => [...prev, { id: Date.now(), startX: x, startY: y }]);
-      setIsVisible(true); // Mostrar el header si estaba oculto
+      setIsVisible(true);
     };
     window.addEventListener('cart-add-anim', handler);
     return () => window.removeEventListener('cart-add-anim', handler);
@@ -73,7 +73,6 @@ export default function Header() {
     { href: '/contacto', label: 'Contacto' },
   ]
 
-  // Bloquear scroll al abrir menú móvil
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -83,23 +82,15 @@ export default function Header() {
     const handleScroll = () => {
       const y = window.scrollY
       const lastY = lastYRef.current
-      
-      // Es visible si estás cerca de la parte superior o si subes
       setIsVisible(y < 50 || y < lastY)
-      
-      // Actualiza la referencia para el próximo evento
       lastYRef.current = y
     }
-
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, []) // 👈 El array de dependencias está vacío para que se ejecute solo una vez
+  }, [])
 
-
-  // Cerrar menús al navegar
   useEffect(() => { setIsOpen(false) }, [pathname])
 
-  // Cargar usuario
   async function loadUser() {
     try {
       const r = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' })
@@ -113,7 +104,6 @@ export default function Header() {
   useEffect(() => { loadUser() }, [])
   useEffect(() => { loadUser() }, [pathname])
 
-  // Cerrar menú de usuario al hacer clic fuera o con Escape
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
       if (!userMenuOpen) return
@@ -133,8 +123,8 @@ export default function Header() {
     }
   }, [userMenuOpen])
 
-  // Variantes para la animación de entrada escalonada
-  const containerVariants = {
+  // --- SOLUCIÓN DEL ERROR DE TIPADO ---
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -145,7 +135,7 @@ export default function Header() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: -20, filter: 'blur(10px)' },
     visible: { 
       opacity: 1, 
@@ -332,7 +322,7 @@ export default function Header() {
             </button>
           </motion.div>
         </motion.div>
-        {/* Línea de acento animada que aparece al cargar */}
+
         <motion.div 
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -398,8 +388,6 @@ export default function Header() {
           const targetX = targetRect ? targetRect.left + targetRect.width / 2 - 10 : 0;
           let targetY = targetRect ? targetRect.top + targetRect.height / 2 - 10 : 0;
 
-          // Si el header estaba oculto (transformado hacia arriba), targetY será negativo.
-          // Lo ajustamos manualmente para que vuele a la zona visible (aprox 28px desde arriba).
           if (targetY < 0) {
             targetY = 28;
           }
@@ -415,7 +403,6 @@ export default function Header() {
               className="w-5 h-5 bg-rose-600 rounded-full shadow-md border-2 border-white"
               onAnimationComplete={() => {
                 setFlyingItems(prev => prev.filter(i => i.id !== item.id));
-                // Eliminado el incremento manual para evitar doble conteo
                 setCartIsBumping(true);
               }}
             />
