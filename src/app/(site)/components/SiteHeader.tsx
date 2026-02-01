@@ -168,12 +168,17 @@ export default function Header() {
               <button
                 aria-label={userMenuOpen ? "Cerrar menú de cuenta" : "Abrir menú de cuenta"}
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className='cursor-pointer hover:bg-stone-200 p-2 rounded-full transition-colors duration-300'
+                className='cursor-pointer hover:bg-stone-200 p-2 rounded-xl transition-colors duration-300 flex flex-col items-center min-w-[44px]'
               >
-                {userMenuOpen ? (
+                {me || userMenuOpen ? (
                   <FaUser className="w-5.5 h-auto text-stone-700 hover:text-stone-800 transition" />
                 ) : (
                   <FaRegUser className="w-5.5 h-auto text-stone-700 hover:text-stone-800 transition" />
+                )}
+                {me && (
+                  <span className="text-[10px] font-semibold text-stone-600 mt-0.5 leading-none max-w-[64px] truncate capitalize">
+                    {me.name?.split(' ')[0] || me.email.split('@')[0]}
+                  </span>
                 )}
               </button>
 
