@@ -133,6 +133,28 @@ export default function Header() {
     }
   }, [userMenuOpen])
 
+  // Variantes para la animación de entrada escalonada
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: -20, filter: 'blur(10px)' },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      filter: 'blur(0px)',
+      transition: { type: 'spring', stiffness: 260, damping: 20 }
+    },
+  };
+
   return (
     <>
       <header
@@ -141,12 +163,24 @@ export default function Header() {
           isVisible ? 'translate-y-0' : '-translate-y-full'
         )}
       >
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/">
-            <Image src={Logo} alt="Logotipo de Impulso" width={50} />
-          </Link>
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="container mx-auto px-4 py-3 flex items-center justify-between"
+        >
+          <motion.div variants={itemVariants}>
+            <Link href="/">
+              <Image 
+                src={Logo} 
+                alt="Logotipo de Impulso" 
+                width={50} 
+                className="hover:scale-105 transition-transform duration-300" 
+              />
+            </Link>
+          </motion.div>
 
-          <nav className="hidden md:flex gap-4">
+          <motion.nav className="hidden md:flex gap-4" variants={itemVariants}>
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -161,9 +195,9 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
-          </nav>
+          </motion.nav>
 
-          <div className="hidden md:flex items-center gap-6">
+          <motion.div className="hidden md:flex items-center gap-6" variants={itemVariants}>
             <div className="relative flex items-center" ref={userMenuRef}>
               <button
                 aria-label={userMenuOpen ? "Cerrar menú de cuenta" : "Abrir menú de cuenta"}
@@ -257,9 +291,9 @@ export default function Header() {
               )}
               </motion.div>
             </button>
-          </div>
+          </motion.div>
 
-          <div className="md:hidden flex items-center gap-7">
+          <motion.div className="md:hidden flex items-center gap-7" variants={itemVariants}>
             <button
               ref={mobileCartBtnRef}
               type="button"
@@ -296,8 +330,15 @@ export default function Header() {
             >
               <FaBars className="w-6 h-6 text-stone-700 hover:text-stone-800 transition" />
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
+        {/* Línea de acento animada que aparece al cargar */}
+        <motion.div 
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.5, delay: 0.5, ease: "circOut" }}
+          className="h-[0.5px] w-full bg-gradient-to-r from-transparent via-rose-400 to-transparent origin-center opacity-40"
+        />
       </header>
 
       <AnimatePresence>
