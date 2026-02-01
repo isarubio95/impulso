@@ -1,15 +1,29 @@
-export const runtime = 'nodejs';
+'use client';
 
 import Link from 'next/link';
 import { signIn } from '@/lib/auth';
+import { useActionState, use } from 'react';
 
-export default async function LoginPage({
+type SearchParams = { next?: string };
+
+type ActionState = {
+  error?: string;
+} | null;
+
+export default function LoginPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ next?: string }>;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const sp = await searchParams;
+  const sp = use(searchParams || Promise.resolve({} as SearchParams));
   const next = sp?.next ?? '';
+
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
+    async (_prevState, formData) => {
+      return await signIn(formData);
+    },
+    null
+  );
 
   return (
     <section className="min-h-[80vh] flex flex-col items-center justify-center bg-stone-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -24,8 +38,20 @@ export default async function LoginPage({
         </div>
 
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-xl sm:px-10 border border-stone-100">
-          <form action={signIn} className="space-y-6">
+          <form action={formAction} className="space-y-6">
             {next && <input type="hidden" name="next" value={next} />}
+
+            {/* AQUÍ SE MOSTRARÁ EL ERROR EN ROJO */}
+            {state?.error && (
+              <div className="p-3 rounded-md bg-red-50 border border-red-200 animate-pulse">
+                <p className="text-sm text-red-800 font-medium text-center flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                  </svg>
+                  {state.error}
+                </p>
+              </div>
+            )}
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-stone-700">
@@ -64,9 +90,10 @@ export default async function LoginPage({
             <div>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md border border-transparent bg-rose-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-colors cursor-pointer"
+                disabled={isPending}
+                className="flex w-full justify-center rounded-md border border-transparent bg-rose-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Entrar
+                {isPending ? 'Iniciando sesión...' : 'Entrar'}
               </button>
             </div>
           </form>

@@ -153,10 +153,10 @@ export async function signIn(formData: FormData) {
   const next = safePath(parsed.data.next);
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new Error('Email o contraseña incorrectos');
+  if (!user) return { error: 'Email o contraseña incorrectos'};
 
   const ok = await verifyPassword(password, user.password);
-  if (!ok) throw new Error('Email o contraseña incorrectos');
+  if (!ok) return { error: 'Email o contraseña incorrectos'};
 
   const session = await prisma.session.create({
     data: {
